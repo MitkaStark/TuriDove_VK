@@ -1,8 +1,8 @@
-# 🌿 Agroturismo Panamá
+# TuriDove
 
-Plataforma digital de turismo rural y sostenible que conecta proveedores de
-servicios agroturísticos con viajeros que buscan experiencias auténticas en
-el campo panameño.
+Agencia de viajes boutique internacional. Reserva hoteles, actividades,
+vehículos, transfers y paquetes turísticos en destinos curados alrededor
+del mundo. Pago real con Stripe.
 
 **Proyecto dockerizado y listo para despliegue en producción.**
 
@@ -75,16 +75,16 @@ Todo orquestado con `docker-compose`:
 
 **Linux / macOS / WSL:**
 ```bash
-git clone https://github.com/MitkaStark/Agroturismo.git
-cd Agroturismo
+git clone https://github.com/MitkaStark/TuriDove.git
+cd TuriDove
 chmod +x setup.sh
 ./setup.sh
 ```
 
 **Windows PowerShell:**
 ```powershell
-git clone https://github.com/MitkaStark/Agroturismo.git
-cd Agroturismo
+git clone https://github.com/MitkaStark/TuriDove.git
+cd TuriDove
 powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
@@ -143,7 +143,7 @@ Después del primer `setup.sh`, los usuarios seed tienen estas contraseñas.
 
 | Rol | Email | Contraseña |
 |-----|-------|-----------|
-| ADMIN | `admin@agroturismo.pa` | `Admin123!` |
+| ADMIN | `admin@turidove.com` | `Admin123!` |
 | PROVEEDOR | `finca.loma@agroturismo.pa` | `Proveedor123!` |
 | PROVEEDOR | `aventura.chiriqui@agroturismo.pa` | `Proveedor123!` |
 | AGENCIA | `agencia.panama@agroturismo.pa` | `Agencia123!` |
@@ -156,7 +156,7 @@ Después del primer `setup.sh`, los usuarios seed tienen estas contraseñas.
 ## Estructura del Proyecto
 
 ```
-Agroturismo/
+TuriDove/
 ├── backend/                      # API NestJS
 │   ├── Dockerfile                # Multi-stage: builder + runtime
 │   ├── prisma/
@@ -220,7 +220,7 @@ Agroturismo/
 ## Funcionalidades
 
 ### Frontend Público
-- 🏠 Catálogo de hospedajes, actividades, transfers y vehículos
+- 🏠 Catálogo de hoteles, actividades, transfers y vehículos
 - 🔍 Búsqueda por texto en todos los catálogos
 - 📋 Páginas de detalle con galería de imágenes
 - 🛏️ Modal de detalles de habitaciones con carrusel y tarifas por temporada
@@ -233,7 +233,7 @@ Agroturismo/
 ### Panel Admin
 - 📊 Dashboard con KPIs
 - 👥 Gestión de usuarios (CRUD + roles + activar/desactivar)
-- 🏨 Hospedajes + habitaciones + tarifas + amenidades configurables
+- 🏨 Hoteles + habitaciones + tarifas + amenidades configurables
 - 🎭 Actividades
 - 🚌 Transfers
 - 🚙 Vehículos con validación de placa única
@@ -323,7 +323,7 @@ Ver `.env.docker.example` para la lista completa con comentarios.
 
 ```env
 # PostgreSQL
-POSTGRES_DB=agroturismo
+POSTGRES_DB=turidove
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=ServBay.dev        # !!! cambiar en producción
 POSTGRES_PORT=5433
@@ -380,7 +380,7 @@ docker compose --env-file .env.docker up -d
 
 # Entrar al contenedor
 docker compose --env-file .env.docker exec backend sh
-docker compose --env-file .env.docker exec postgres psql -U postgres -d agroturismo
+docker compose --env-file .env.docker exec postgres psql -U postgres -d turidove
 
 # Rebuild tras cambios en código
 docker compose --env-file .env.docker up -d --build
@@ -410,13 +410,13 @@ Al hacer `setup.sh` por primera vez, la base de datos se inicializa con:
 
 - 📘 [DOCKER.md](./DOCKER.md) — Referencia técnica de la dockerización
 - 🚀 [DEPLOYMENT.md](./DEPLOYMENT.md) — Guía de despliegue en servidor
-- 📄 [docs/PLATAFORMA_AGROTURISMO_MVP.md](docs/PLATAFORMA_AGROTURISMO_MVP.md) — Documento MVP para stakeholders
+- 📄 [docs/PLATAFORMA_AGROTURISMO_MVP.md](docs/PLATAFORMA_AGROTURISMO_MVP.md) — Documento MVP para stakeholders (histórico)
 - 💰 [docs/FINANZAS_RECOMENDACIONES.md](docs/FINANZAS_RECOMENDACIONES.md) — Recomendaciones módulo Finanzas
 
 ---
 
 ## Licencia y créditos
 
-**Agroturismo Panamá** — Turismo rural y sostenible 🌿
+**TuriDove** — Agencia de viajes boutique internacional
 
 Desarrollado con Claude Code como asistente de desarrollo.
