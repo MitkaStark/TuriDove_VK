@@ -1,38 +1,43 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Playfair_Display, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 
-const inter = Inter({
+const playfair = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-body',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: {
-    default: 'Agroturismo Panama - Turismo Rural y Sostenible',
-    template: '%s | Agroturismo Panama',
+    default: 'TuriDove — Viajes boutique, hoteles, actividades y paquetes',
+    template: '%s | TuriDove',
   },
   description:
-    'Descubre experiencias unicas de agroturismo en Panama. Hospedajes rurales, actividades al aire libre, transfers y alquiler de vehiculos para explorar la naturaleza panamena.',
+    'Reserva hoteles boutique, actividades únicas, vehículos y paquetes de viaje internacionales. Experiencias curadas con atención personalizada.',
   keywords: [
-    'agroturismo',
-    'panama',
-    'turismo rural',
-    'hospedaje rural',
-    'actividades naturaleza',
-    'ecoturismo',
-    'turismo sostenible',
+    'turismo',
+    'hoteles',
+    'paquetes turísticos',
+    'actividades',
+    'vehículos',
+    'viajes boutique',
   ],
-  authors: [{ name: 'Agroturismo Panama' }],
+  authors: [{ name: 'TuriDove' }],
   openGraph: {
     type: 'website',
-    locale: 'es_PA',
-    siteName: 'Agroturismo Panama',
-    title: 'Agroturismo Panama - Turismo Rural y Sostenible',
+    locale: 'es',
+    siteName: 'TuriDove',
+    title: 'TuriDove — Tu agencia de viajes boutique',
     description:
-      'Descubre experiencias unicas de agroturismo en Panama. Hospedajes rurales, actividades al aire libre y mas.',
+      'Hoteles, actividades, vehículos y paquetes de viaje internacionales.',
   },
 };
 
@@ -43,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${playfair.variable} ${dmSans.variable} font-body antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
