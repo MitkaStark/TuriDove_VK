@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Deep Forest Green + Warm Gold - Luxury Nature palette */
+    --background: 39 30% 97%;
+    --foreground: 160 30% 7%;
+
+    --card: 40 20% 97%;
+    --card-foreground: 160 25% 8%;
+
+    --popover: 40 25% 98%;
+    --popover-foreground: 160 25% 8%;
+
+    --primary: 158 60% 20%;
+    --primary-foreground: 40 30% 97%;
+
+    --secondary: 38 40% 90%;
+    --secondary-foreground: 38 45% 18%;
+
+    --muted: 38 15% 94%;
+    --muted-foreground: 160 8% 42%;
+
+    --accent: 38 45% 92%;
+    --accent-foreground: 38 50% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 38 18% 88%;
+    --input: 38 18% 86%;
+    --ring: 158 60% 20%;
+
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: 160 20% 6%;
+    --foreground: 38 20% 95%;
+    --card: 160 18% 9%;
+    --card-foreground: 38 20% 95%;
+    --popover: 160 20% 6%;
+    --popover-foreground: 38 20% 95%;
+    --primary: 155 50% 40%;
+    --primary-foreground: 160 20% 5%;
+    --secondary: 38 22% 16%;
+    --secondary-foreground: 38 25% 85%;
+    --muted: 160 12% 15%;
+    --muted-foreground: 38 12% 55%;
+    --accent: 38 25% 14%;
+    --accent-foreground: 38 22% 85%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 160 12% 18%;
+    --input: 160 12% 18%;
+    --ring: 155 50% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    @apply bg-primary/15 text-primary;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3
+           text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20
+           transition-all duration-300 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg bg-secondary px-6 py-3
+           text-sm font-semibold text-secondary-foreground shadow-sm
+           transition-all duration-300 hover:bg-secondary/80 hover:-translate-y-0.5
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-lg border border-border
+           bg-background px-6 py-3 text-sm font-semibold shadow-sm
+           transition-all duration-300 hover:bg-accent hover:text-accent-foreground hover:-translate-y-0.5
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .card-base {
+    @apply rounded-xl border bg-card text-card-foreground shadow-sm
+           transition-all duration-300;
+  }
+
+  .input-base {
+    @apply flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2
+           text-sm ring-offset-background
+           placeholder:text-muted-foreground/60
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:border-primary/40
+           disabled:cursor-not-allowed disabled:opacity-50
+           transition-all duration-200;
+  }
+
+  .section-heading {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl;
+    letter-spacing: -0.03em;
+  }
+
+  .section-subheading {
+    @apply text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.6s ease-out both;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/30 backdrop-blur-xl border border-white/10;
+  }
+}

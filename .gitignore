@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+backend/dist/
+frontend/.next/
+frontend/out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.docker
+
+# Uploads — include seed images in repo for fresh-clone deployment.
+# To exclude NEW uploads made after initial deploy, track them manually
+# or move them to a separate volume. For now, uploads/ is committed.
+backend/uploads/seed/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Large docs (generate locally with docs/generate-docx.py)
+docs/*.docx
+docs/*.pdf
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts

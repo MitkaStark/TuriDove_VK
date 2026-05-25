@@ -1,0 +1,577 @@
+// ──────────────────────────────────────────────
+// Agroturismo Panama – Prisma Schema
+// ──────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  PROVEEDOR
+  AGENCIA
+  OPERADOR
+  CLIENTE
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+  REEMBOLSADA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PROCESANDO
+  COMPLETADO
+  FALLIDO
+  REEMBOLSADO
+}
+
+enum TipoHabitacion {
+  INDIVIDUAL
+  DOBLE
+  SUITE
+  FAMILIAR
+  DORMITORIO
+}
+
+enum TipoActividad {
+  AVENTURA
+  CULTURAL
+  GASTRONOMICA
+  NATURALEZA
+  EDUCATIVA
+  DEPORTIVA
+}
+
+enum TipoVehiculo {
+  SEDAN
+  SUV
+  PICKUP
+  VAN
+  BUS
+  MINIBUS
+}
+
+enum TipoTransfer {
+  AEROPUERTO
+  HOTEL
+  PUNTO_A_PUNTO
+  TOUR
+}
+
+enum Temporada {
+  ALTA
+  MEDIA
+  BAJA
+}
+
+enum MetodoPago {
+  TARJETA
+  YAPPY
+  TRANSFERENCIA
+  EFECTIVO
+}
+
+// ──────────────────────────────────────────────
+// Models
+// ──────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  apellido  String
+  telefono  String?
+  role      Role     @default(CLIENTE)
+  activo    Boolean  @default(true)
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hospedajes       Hospedaje[]
+  actividades      Actividad[]
+  transfers        Transfer[]
+  vehiculos        Vehiculo[]
+  reservas         Reserva[]
+  pagos            Pago[]
+  auditLogs        AuditLog[]
+  paquetes         PaqueteActividad[]
+  comisiones       Comision[]
+
+  @@map("users")
+}
+
+model Hospedaje {
+  id             String   @id @default(uuid())
+  nombre         String
+  descripcion    String   @default("")
+  direccion      String   @default("")
+  provincia      String   @default("")
+  distrito       String   @default("")
+  corregimiento  String   @default("")
+  latitud        Float?
+  longitud       Float?
+  imagenes         String[]
+  imagenPrincipal  String?   @map("imagen_principal")
+  amenidades       String[]
+  politicas      String?
+  checkIn        String   @default("14:00") @map("check_in")
+  checkOut       String   @default("12:00") @map("check_out")
+  activo         Boolean  @default(true)
+  proveedorId    String   @map("proveedor_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  proveedor          User                @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  habitaciones       Habitacion[]
+  tarifas            TarifaHospedaje[]
+  reservaHospedajes  ReservaHospedaje[]
+
+  @@index([proveedorId])
+  @@index([provincia])
+  @@map("hospedajes")
+}
+
+model Habitacion {
+  id           String          @id @default(uuid())
+  nombre       String
+  tipo         TipoHabitacion
+  capacidad    Int
+  descripcion  String?
+  amenidades   String[]
+  imagenes     String[]
+  activo       Boolean         @default(true)
+  hospedajeId  String          @map("hospedaje_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  hospedaje        Hospedaje                 @relation(fields: [hospedajeId], references: [id], onDelete: Cascade)
+  disponibilidades DisponibilidadHospedaje[]
+  tarifas          TarifaHospedaje[]
+  reservas         ReservaHospedaje[]
+
+  @@index([hospedajeId])
+  @@map("habitaciones")
+}
+
+model TarifaHospedaje {
+  id                 String    @id @default(uuid())
+  hospedajeId        String    @map("hospedaje_id")
+  habitacionId       String?   @map("habitacion_id")
+  temporada          Temporada
+  precioNoche        Decimal   @map("precio_noche")
+  precioPersonaExtra Decimal   @default(0) @map("precio_persona_extra")
+  moneda             String    @default("USD")
+  fechaInicio        DateTime  @map("fecha_inicio")
+  fechaFin           DateTime  @map("fecha_fin")
+  activo             Boolean   @default(true)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  hospedaje  Hospedaje   @relation(fields: [hospedajeId], references: [id], onDelete: Cascade)
+  habitacion Habitacion? @relation(fields: [habitacionId], references: [id], onDelete: SetNull)
+
+  @@index([hospedajeId])
+  @@index([habitacionId])
+  @@map("tarifas_hospedaje")
+}
+
+model DisponibilidadHospedaje {
+  id           String   @id @default(uuid())
+  habitacionId String   @map("habitacion_id")
+  fecha        DateTime
+  disponible   Boolean  @default(true)
+  notas        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  habitacion Habitacion @relation(fields: [habitacionId], references: [id], onDelete: Cascade)
+
+  @@unique([habitacionId, fecha])
+  @@index([habitacionId])
+  @@map("disponibilidad_hospedaje")
+}
+
+model Actividad {
+  id               String        @id @default(uuid())
+  nombre           String
+  descripcion      String
+  tipo             TipoActividad
+  duracionHoras    Float         @map("duracion_horas")
+  ubicacion        String
+  provincia        String
+  distrito         String
+  imagenes         String[]
+  incluye          String[]
+  noIncluye        String[]      @map("no_incluye")
+  requisitos       String[]
+  edadMinima       Int           @default(0) @map("edad_minima")
+  capacidadMaxima  Int           @map("capacidad_maxima")
+  activo           Boolean       @default(true)
+  proveedorId      String        @map("proveedor_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  proveedor          User                 @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  tarifas            TarifaActividad[]
+  paquetes           PaqueteActividad[]
+  calendarios        CalendarioActividad[]
+  reservaActividades ReservaActividad[]
+
+  @@index([proveedorId])
+  @@index([provincia])
+  @@index([tipo])
+  @@map("actividades")
+}
+
+model TarifaActividad {
+  id              String    @id @default(uuid())
+  actividadId     String    @map("actividad_id")
+  temporada       Temporada
+  precioAdulto    Decimal   @map("precio_adulto")
+  precioNino      Decimal   @map("precio_nino")
+  precioGrupo     Decimal?  @map("precio_grupo")
+  minimoPersonas  Int       @default(1) @map("minimo_personas")
+  moneda          String    @default("USD")
+  fechaInicio     DateTime  @map("fecha_inicio")
+  fechaFin        DateTime  @map("fecha_fin")
+  activo          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@index([actividadId])
+  @@map("tarifas_actividad")
+}
+
+model PaqueteActividad {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String?
+  descuento   Decimal  @default(0)
+  activo      Boolean  @default(true)
+  proveedorId String   @map("proveedor_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  proveedor   User        @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  actividades Actividad[]
+
+  @@index([proveedorId])
+  @@map("paquetes_actividad")
+}
+
+model CalendarioActividad {
+  id                String   @id @default(uuid())
+  actividadId       String   @map("actividad_id")
+  fecha             DateTime
+  horaInicio        String   @map("hora_inicio")
+  horaFin           String   @map("hora_fin")
+  cuposDisponibles  Int      @map("cupos_disponibles")
+  activo            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@index([actividadId])
+  @@index([fecha])
+  @@map("calendario_actividad")
+}
+
+model Transfer {
+  id               String        @id @default(uuid())
+  nombre           String
+  tipo             TipoTransfer
+  origen           String
+  destino          String
+  descripcion      String?
+  distanciaKm      Float?        @map("distancia_km")
+  duracionEstimada String?       @map("duracion_estimada")
+  activo           Boolean       @default(true)
+  proveedorId      String        @map("proveedor_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  proveedor          User               @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  tarifas            TarifaTransfer[]
+  vehiculoTransfers  VehiculoTransfer[]
+  reservaTransfers   ReservaTransfer[]
+
+  @@index([proveedorId])
+  @@index([tipo])
+  @@map("transfers")
+}
+
+model TarifaTransfer {
+  id               String    @id @default(uuid())
+  transferId       String    @map("transfer_id")
+  temporada        Temporada
+  precioPorPersona Decimal   @map("precio_por_persona")
+  precioVehiculo   Decimal?  @map("precio_vehiculo")
+  minimoPersonas   Int       @default(1) @map("minimo_personas")
+  moneda           String    @default("USD")
+  fechaInicio      DateTime  @map("fecha_inicio")
+  fechaFin         DateTime  @map("fecha_fin")
+  activo           Boolean   @default(true)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([transferId])
+  @@map("tarifas_transfer")
+}
+
+model VehiculoTransfer {
+  id         String   @id @default(uuid())
+  transferId String   @map("transfer_id")
+  vehiculoId String   @map("vehiculo_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
+
+  @@index([transferId])
+  @@index([vehiculoId])
+  @@map("vehiculos_transfer")
+}
+
+model Vehiculo {
+  id                   String       @id @default(uuid())
+  marca                String
+  modelo               String
+  anio                 Int
+  placa                String       @unique
+  tipo                 TipoVehiculo
+  capacidadPasajeros   Int          @map("capacidad_pasajeros")
+  caracteristicas      String[]
+  imagenes             String[]
+  seguroIncluido       Boolean      @default(false) @map("seguro_incluido")
+  activo               Boolean      @default(true)
+  proveedorId          String       @map("proveedor_id")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  proveedor            User                    @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  tarifas              TarifaVehiculo[]
+  vehiculoTransfers    VehiculoTransfer[]
+  disponibilidades     DisponibilidadVehiculo[]
+  reservaVehiculos     ReservaVehiculo[]
+
+  @@index([proveedorId])
+  @@index([tipo])
+  @@map("vehiculos")
+}
+
+model TarifaVehiculo {
+  id           String    @id @default(uuid())
+  vehiculoId   String    @map("vehiculo_id")
+  temporada    Temporada
+  precioDia    Decimal   @map("precio_dia")
+  precioSemana Decimal?  @map("precio_semana")
+  deposito     Decimal   @default(0)
+  moneda       String    @default("USD")
+  fechaInicio  DateTime  @map("fecha_inicio")
+  fechaFin     DateTime  @map("fecha_fin")
+  activo       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
+
+  @@index([vehiculoId])
+  @@map("tarifas_vehiculo")
+}
+
+model DisponibilidadVehiculo {
+  id         String   @id @default(uuid())
+  vehiculoId String   @map("vehiculo_id")
+  fecha      DateTime
+  disponible Boolean  @default(true)
+  notas      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
+
+  @@unique([vehiculoId, fecha])
+  @@index([vehiculoId])
+  @@map("disponibilidad_vehiculo")
+}
+
+model Reserva {
+  id        String        @id @default(uuid())
+  codigo    String        @unique @default(uuid())
+  clienteId String        @map("cliente_id")
+  estado    EstadoReserva @default(PENDIENTE)
+  total     Decimal
+  moneda    String        @default("USD")
+  notas     String?
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  cliente            User               @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  reservaHospedajes  ReservaHospedaje[]
+  reservaActividades ReservaActividad[]
+  reservaTransfers   ReservaTransfer[]
+  reservaVehiculos   ReservaVehiculo[]
+  pagos              Pago[]
+  comisiones         Comision[]
+
+  @@index([clienteId])
+  @@index([estado])
+  @@index([codigo])
+  @@map("reservas")
+}
+
+model ReservaHospedaje {
+  id           String   @id @default(uuid())
+  reservaId    String   @map("reserva_id")
+  hospedajeId  String   @map("hospedaje_id")
+  habitacionId String   @map("habitacion_id")
+  fechaEntrada DateTime @map("fecha_entrada")
+  fechaSalida  DateTime @map("fecha_salida")
+  huespedes    Int
+  precioTotal  Decimal  @map("precio_total")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  reserva    Reserva    @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  hospedaje  Hospedaje  @relation(fields: [hospedajeId], references: [id], onDelete: Cascade)
+  habitacion Habitacion @relation(fields: [habitacionId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([hospedajeId])
+  @@index([habitacionId])
+  @@map("reservas_hospedaje")
+}
+
+model ReservaActividad {
+  id          String   @id @default(uuid())
+  reservaId   String   @map("reserva_id")
+  actividadId String   @map("actividad_id")
+  fecha       DateTime
+  adultos     Int
+  ninos       Int      @default(0)
+  precioTotal Decimal  @map("precio_total")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reserva   Reserva   @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([actividadId])
+  @@map("reservas_actividad")
+}
+
+model ReservaTransfer {
+  id          String   @id @default(uuid())
+  reservaId   String   @map("reserva_id")
+  transferId  String   @map("transfer_id")
+  fecha       DateTime
+  pasajeros   Int
+  precioTotal Decimal  @map("precio_total")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reserva  Reserva  @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([transferId])
+  @@map("reservas_transfer")
+}
+
+model ReservaVehiculo {
+  id          String   @id @default(uuid())
+  reservaId   String   @map("reserva_id")
+  vehiculoId  String   @map("vehiculo_id")
+  fechaInicio DateTime @map("fecha_inicio")
+  fechaFin    DateTime @map("fecha_fin")
+  precioTotal Decimal  @map("precio_total")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reserva  Reserva  @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([vehiculoId])
+  @@map("reservas_vehiculo")
+}
+
+model Pago {
+  id              String     @id @default(uuid())
+  reservaId       String     @map("reserva_id")
+  monto           Decimal
+  moneda          String     @default("USD")
+  metodo          MetodoPago
+  estado          EstadoPago @default(PENDIENTE)
+  referencia      String?
+  stripePaymentId String?    @map("stripe_payment_id")
+  detalles        Json?
+  userId          String     @map("user_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  reserva Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([userId])
+  @@index([estado])
+  @@map("pagos")
+}
+
+model Comision {
+  id                 String    @id @default(uuid())
+  reservaId          String    @map("reserva_id")
+  proveedorId        String    @map("proveedor_id")
+  montoTotal         Decimal   @map("monto_total")
+  porcentajeComision Decimal   @map("porcentaje_comision")
+  montoComision      Decimal   @map("monto_comision")
+  montoProveedor     Decimal   @map("monto_proveedor")
+  estado             String    @default("PENDIENTE")
+  liquidadoEn        DateTime? @map("liquidado_en")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  proveedor User    @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+
+  @@index([reservaId])
+  @@index([proveedorId])
+  @@index([estado])
+  @@map("comisiones")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  accion    String
+  entidad   String
+  entidadId String   @map("entidad_id")
+  datos     Json?
+  userId    String   @map("user_id")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entidad, entidadId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
