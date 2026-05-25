@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Leaf, Menu, X, LogOut, User, Settings } from "lucide-react";
+import { Menu, X, LogOut, User, Settings } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useTranslation } from "@/hooks/use-translation";
 import { Role } from "@/types";
@@ -15,6 +15,15 @@ const rolePaths: Record<string, string> = {
   [Role.OPERADOR]: "/operador",
   [Role.CLIENTE]: "/cliente",
 };
+
+const roleKickers: Record<string, string> = {
+  [Role.ADMIN]: "ADMIN",
+  [Role.PROVEEDOR]: "PROVEEDOR",
+  [Role.AGENCIA]: "AGENCIA",
+  [Role.OPERADOR]: "OPERADOR",
+  [Role.CLIENTE]: "MI CUENTA",
+};
+
 import { SidebarNav, type SidebarNavItem } from "./sidebar-nav";
 import { RoleBadge } from "./role-badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/layout/logo";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -53,21 +62,16 @@ export function DashboardLayout({
     ? `${user.nombre[0]}${user.apellido[0]}`.toUpperCase()
     : "??";
 
+  const kicker = roleKickers[user?.role || ""] || "PANEL";
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="fixed inset-0 z-[100] flex bg-cream">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
         <SidebarNav
           items={sidebarItems}
+          kicker={kicker}
           className="h-screen"
-          header={
-            <Link href="/" className="flex items-center gap-2">
-              <Leaf className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold">
-                Agro<span className="text-primary">turismo</span>
-              </span>
-            </Link>
-          }
         />
       </div>
 
@@ -78,40 +82,37 @@ export function DashboardLayout({
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative z-10 h-full w-64 bg-background shadow-lg">
-            <div className="flex items-center justify-between p-4">
-              <Link href="/" className="flex items-center gap-2">
-                <Leaf className="h-6 w-6 text-primary" />
-                <span className="font-bold">TuriDove</span>
-              </Link>
+          <div className="relative z-10 h-full w-[260px] bg-white shadow-lg flex flex-col">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-navy-100/50">
+              <Logo variant="admin" kicker={kicker} href="/" />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileOpen(false)}
+                className="text-navy-500"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <Separator />
-            <SidebarNav items={sidebarItems} className="border-r-0" />
+            <SidebarNav items={sidebarItems} kicker={kicker} className="border-r-0 w-full" />
           </div>
         </div>
       )}
 
       {/* Main Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6">
+        <header className="h-16 shrink-0 flex items-center justify-between px-8 border-b border-navy-100/50 bg-white">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="md:hidden text-navy-500"
               onClick={() => setMobileOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h2 className="text-lg font-semibold">{title}</h2>
+            <h1 className="text-lg font-display font-bold text-navy-800">{title}</h1>
           </div>
 
           <div className="flex items-center gap-3">
@@ -119,12 +120,12 @@ export function DashboardLayout({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
                   <Avatar className="h-8 w-8">
                     {user?.avatar ? (
                       <img src={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api/v1', '')}${user.avatar}`} alt="" className="h-full w-full object-cover rounded-full" />
                     ) : (
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                      <AvatarFallback className="bg-gradient-to-br from-gold-400 to-gold-500 text-white text-xs font-semibold">
                         {initials}
                       </AvatarFallback>
                     )}
@@ -133,10 +134,10 @@ export function DashboardLayout({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium text-navy-800">
                     {user?.nombre} {user?.apellido}
                   </p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-xs text-navy-400">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => router.push(`${rolePaths[user?.role || "CLIENTE"]}/perfil`)}>
@@ -158,7 +159,7 @@ export function DashboardLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </div>
     </div>
   );
