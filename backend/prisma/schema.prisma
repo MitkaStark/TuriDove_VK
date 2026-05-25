@@ -133,6 +133,7 @@ model Hospedaje {
   checkOut       String   @default("12:00") @map("check_out")
   activo         Boolean  @default(true)
   proveedorId    String   @map("proveedor_id")
+  isFeatured     Boolean  @default(false) @map("is_featured")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -223,6 +224,7 @@ model Actividad {
   capacidadMaxima  Int           @map("capacidad_maxima")
   activo           Boolean       @default(true)
   proveedorId      String        @map("proveedor_id")
+  isFeatured       Boolean       @default(false) @map("is_featured")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
@@ -305,6 +307,7 @@ model Transfer {
   duracionEstimada String?       @map("duracion_estimada")
   activo           Boolean       @default(true)
   proveedorId      String        @map("proveedor_id")
+  isFeatured       Boolean       @default(false) @map("is_featured")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
@@ -365,6 +368,7 @@ model Vehiculo {
   seguroIncluido       Boolean      @default(false) @map("seguro_incluido")
   activo               Boolean      @default(true)
   proveedorId          String       @map("proveedor_id")
+  isFeatured           Boolean      @default(false) @map("is_featured")
   createdAt            DateTime     @default(now()) @map("created_at")
   updatedAt            DateTime     @updatedAt @map("updated_at")
 
