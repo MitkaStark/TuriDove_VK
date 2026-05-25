@@ -1,7 +1,7 @@
 {
-  "name": "agroturismo-backend",
+  "name": "turidove-backend",
   "version": "1.0.0",
-  "description": "Agroturismo Panama - Backend API",
+  "description": "TuriDove - Backend API",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
