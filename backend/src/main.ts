@@ -54,9 +54,9 @@ async function bootstrap() {
 
   // Swagger
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Agroturismo Panama API')
+    .setTitle('TuriDove API')
     .setDescription(
-      'API para la plataforma de agroturismo en Panama. ' +
+      'API de TuriDove — agencia de viajes boutique. ' +
       'Gestiona hospedajes, actividades, transfers, reservas, pagos y mas.',
     )
     .setVersion('1.0')
@@ -91,7 +91,7 @@ async function bootstrap() {
   });
 
   await app.listen(port);
-  logger.log(`Agroturismo API running on http://localhost:${port}`);
+  logger.log(`TuriDove API running on http://localhost:${port}`);
   logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 
