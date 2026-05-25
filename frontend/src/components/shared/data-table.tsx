@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import {
@@ -60,8 +59,8 @@ export function DataTable<T extends Record<string, unknown>>({
   data,
   pagination,
   loading = false,
-  emptyMessage = "No data found.",
-  searchPlaceholder = "Search...",
+  emptyMessage = "No se encontraron resultados.",
+  searchPlaceholder = "Buscar...",
   onSearch,
   searchValue,
 }: DataTableProps<T>) {
@@ -117,20 +116,20 @@ export function DataTable<T extends Record<string, unknown>>({
       <div className="flex items-center justify-between gap-4">
         {onSearch ? (
           <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
             <Input
               placeholder={searchPlaceholder}
               value={searchValue ?? ""}
               onChange={(e) => onSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 border-navy-200 focus-visible:ring-gold-400/50 focus-visible:border-gold-400 text-navy-800 placeholder:text-navy-300"
             />
           </div>
         ) : <div />}
         {useInternal && data.length > 10 && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Mostrar</span>
+            <span className="text-sm text-navy-400 whitespace-nowrap font-body">Mostrar</span>
             <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-              <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-[70px] border-navy-200 text-navy-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {PAGE_SIZE_OPTIONS.map((size) => (
                   <SelectItem key={size} value={String(size)}>{size}</SelectItem>
@@ -142,12 +141,17 @@ export function DataTable<T extends Record<string, unknown>>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="bg-white rounded-2xl shadow-card overflow-hidden border border-navy-100/50">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-b border-navy-100/50 bg-cream-100 hover:bg-cream-100">
               {columns.map((column) => (
-                <TableHead key={column.key}>{column.header}</TableHead>
+                <TableHead
+                  key={column.key}
+                  className="text-left px-4 py-3 text-[10px] font-body font-semibold tracking-[0.15em] uppercase text-navy-400"
+                >
+                  {column.header}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -160,15 +164,18 @@ export function DataTable<T extends Record<string, unknown>>({
               </TableRow>
             ) : displayData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-navy-400 font-body text-sm">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
               displayData.map((item, index) => (
-                <TableRow key={(item.id as string | number) ?? index}>
+                <TableRow
+                  key={(item.id as string | number) ?? index}
+                  className="border-b border-navy-100/30 hover:bg-navy-50/40 transition-colors"
+                >
                   {columns.map((column) => (
-                    <TableCell key={column.key}>
+                    <TableCell key={column.key} className="px-4 py-3 text-sm font-body text-navy-700">
                       {column.render
                         ? column.render(item)
                         : (item[column.key] as React.ReactNode) ?? "-"}
@@ -184,26 +191,46 @@ export function DataTable<T extends Record<string, unknown>>({
       {/* Pagination footer */}
       {totalItems > 0 && (
         <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-navy-400 font-body">
             {startItem}-{endItem} de {totalItems}
           </p>
           {totalPages > 1 && (
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage <= 1}>
+              <button
+                onClick={() => goToPage(1)}
+                disabled={currentPage <= 1}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 transition-colors"
+                aria-label="Primera página"
+              >
                 <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1}>
+              </button>
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 transition-colors"
+                aria-label="Página anterior"
+              >
                 <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="px-3 text-sm text-muted-foreground">
+              </button>
+              <span className="px-3 py-1.5 rounded-full bg-gold-400 text-white text-sm font-medium">
                 {currentPage} / {totalPages}
               </span>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(currentPage + 1)} disabled={currentPage >= totalPages}>
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 transition-colors"
+                aria-label="Página siguiente"
+              >
                 <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages}>
+              </button>
+              <button
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage >= totalPages}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 transition-colors"
+                aria-label="Última página"
+              >
                 <ChevronsRight className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           )}
         </div>
