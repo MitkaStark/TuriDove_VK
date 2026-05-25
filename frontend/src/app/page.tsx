@@ -64,7 +64,7 @@ export default function HomePage() {
               <Leaf className="h-5 w-5 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight text-white">
-              Agro<span className="text-green-400">turismo</span>
+              Turi<span className="text-green-400">Dove</span>
             </span>
           </Link>
           <div className="hidden items-center gap-1 md:flex">
@@ -122,7 +122,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative flex min-h-[90vh] items-center justify-center pt-16 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/hero-bg.jpg" alt="Paisaje rural de Panamá" className="h-full w-full object-cover" />
+          <img src="/images/hero-bg.jpg" alt="Destino turístico boutique" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-black/50" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/50" />
         </div>
@@ -268,7 +268,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Agroturismo */}
+      {/* Why TuriDove */}
       <section className="py-20">
         <div className="container-page">
           <div className="mx-auto max-w-3xl text-center">
@@ -292,19 +292,19 @@ export default function HomePage() {
                 icon: Home,
                 title: 'Alojamiento Auténtico',
                 description:
-                  'Vive la experiencia real del campo panameño en fincas y cabañas seleccionadas.',
+                  'Vive experiencias únicas en hoteles y alojamientos boutique seleccionados.',
               },
               {
                 icon: Mountain,
-                title: 'Aventura Natural',
+                title: 'Aventura Internacional',
                 description:
-                  'Senderos, cascadas, avistamiento de aves y la biodiversidad única de Panamá.',
+                  'Senderos, cascadas, avistamiento de fauna y la biodiversidad única de cada destino.',
               },
               {
                 icon: Users,
                 title: 'Cultura Local',
                 description:
-                  'Conecta con las tradiciones, la gastronomía y la calidez de la gente del campo.',
+                  'Conecta con las tradiciones, la gastronomía y la calidez de cada destino.',
               },
               {
                 icon: Star,
@@ -314,9 +314,9 @@ export default function HomePage() {
               },
               {
                 icon: MapPin,
-                title: 'Todo Panamá',
+                title: 'Destinos Internacionales',
                 description:
-                  'Desde las tierras altas de Chiriqui hasta las costas de Bocas del Toro.',
+                  'Desde Chiriquí y Bocas del Toro hasta destinos alrededor del mundo.',
               },
             ].map((feature) => {
               const Icon = feature.icon;
@@ -377,10 +377,10 @@ export default function HomePage() {
             <div>
               <div className="flex items-center gap-2">
                 <Leaf className="h-6 w-6 text-primary" />
-                <span className="text-lg font-bold">Agroturismo Panamá</span>
+                <span className="text-lg font-bold">TuriDove</span>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                La plataforma líder de turismo rural y sostenible en Panamá.
+                Agencia de viajes boutique internacional con destinos curados.
               </p>
             </div>
             <div>
@@ -409,7 +409,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-10 border-t pt-6 text-center text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Agroturismo Panamá. {t('home.footer.rights')}
+            &copy; {new Date().getFullYear()} TuriDove. {t('home.footer.rights')}
           </div>
         </div>
       </footer>

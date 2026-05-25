@@ -54,7 +54,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <Leaf className="h-5 w-5 text-primary" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              Agro<span className="text-primary">turismo</span>
+              Turi<span className="text-primary">Dove</span>
             </span>
           </Link>
 
@@ -154,10 +154,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Leaf className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-bold tracking-tight">Agro<span className="text-primary">turismo</span></span>
+              <span className="text-sm font-bold tracking-tight">Turi<span className="text-primary">Dove</span></span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-md">
-              Turismo rural y sostenible en Panamá. Conectamos viajeros con experiencias auténticas en la naturaleza.
+              Agencia de viajes boutique internacional. Reserva hoteles, actividades y paquetes en destinos curados alrededor del mundo.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               {navLinks.map((link) => (
@@ -165,7 +165,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               ))}
             </div>
             <div className="text-xs text-muted-foreground/60 pt-4 border-t border-border/50 w-full">
-              &copy; {new Date().getFullYear()} Agroturismo Panamá. {t('home.footer.rights')}
+              &copy; {new Date().getFullYear()} TuriDove. {t('home.footer.rights')}
             </div>
           </div>
         </div>

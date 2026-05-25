@@ -13,10 +13,10 @@ export default function AuthLayout({
             <Leaf className="h-8 w-8 text-primary" />
           </div>
           <h1 className="mt-4 text-2xl font-bold">
-            Agroturismo <span className="text-primary">Panama</span>
+            Turi<span className="text-primary">Dove</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Turismo Rural y Sostenible
+            Viajes boutique con destinos únicos
           </p>
         </div>
         {children}

@@ -41,7 +41,7 @@ export default function ClienteDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Mi Panel" description="Bienvenido a tu espacio de agroturismo" />
+      <PageHeader title="Mi Panel" description="Bienvenido a tu panel de TuriDove" />
       <div className="grid gap-4 sm:grid-cols-3">
         {stats.map((s) => <StatCard key={s.title} {...s} />)}
       </div>

@@ -82,7 +82,7 @@ export function DashboardLayout({
             <div className="flex items-center justify-between p-4">
               <Link href="/" className="flex items-center gap-2">
                 <Leaf className="h-6 w-6 text-primary" />
-                <span className="font-bold">Agroturismo</span>
+                <span className="font-bold">TuriDove</span>
               </Link>
               <Button
                 variant="ghost"

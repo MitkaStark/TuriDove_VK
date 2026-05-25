@@ -163,7 +163,7 @@ export function PaymentModal({ open, onOpenChange, reservaId, monto, descripcion
                     <p>Banco: <span className="font-medium text-foreground">Banco General</span></p>
                     <p>Cuenta: <span className="font-medium text-foreground">01-23-45-678901-2</span></p>
                     <p>Tipo: <span className="font-medium text-foreground">Corriente</span></p>
-                    <p>Titular: <span className="font-medium text-foreground">Agroturismo Panama S.A.</span></p>
+                    <p>Titular: <span className="font-medium text-foreground">TuriDove S.A.</span></p>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">(Simulado - al confirmar se registrara el pago)</p>
                 </div>

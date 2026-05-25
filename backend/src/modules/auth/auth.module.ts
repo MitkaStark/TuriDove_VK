@@ -15,7 +15,7 @@ import { UsersModule } from '../users/users.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'agroturismo-secret-key'),
+        secret: configService.get<string>('JWT_SECRET', 'turidove-secret-key'),
         signOptions: { expiresIn: '1d' },
       }),
     }),
