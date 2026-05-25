@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────
-#  Agroturismo Panamá — Docker Setup Script (Linux / macOS / WSL)
+#  TuriDove — Docker Setup Script (Linux / macOS / WSL)
 #
 #  Uso:
 #    chmod +x setup.sh
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}▶ Agroturismo Panamá — Setup Docker${NC}"
+echo -e "${GREEN}▶ TuriDove — Setup Docker${NC}"
 echo ""
 
 # 1. Verificar Docker
@@ -72,7 +72,7 @@ echo ""
 # 6. Resumen
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}✓ Agroturismo Panamá está corriendo${NC}"
+echo -e "${GREEN}✓ TuriDove está corriendo${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo "  Frontend   : http://localhost:3000"
@@ -80,9 +80,9 @@ echo "  Backend API: http://localhost:3001/api/v1"
 echo "  API Docs   : http://localhost:3001/api/docs"
 echo ""
 echo "  Credenciales iniciales:"
-echo "    Admin    : admin@agroturismo.pa    / Admin123!"
+echo "    Admin    : admin@turidove.com        / Admin123!"
 echo "    Proveedor: finca.loma@agroturismo.pa / Proveedor123!"
-echo "    Cliente  : juan.perez@gmail.com     / Cliente123!"
+echo "    Cliente  : juan.perez@gmail.com      / Cliente123!"
 echo ""
 echo "  Comandos útiles:"
 echo "    docker compose --env-file .env.docker ps       # Ver estado"

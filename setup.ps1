@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────
-#  Agroturismo Panama - Docker Setup Script (Windows PowerShell)
+#  TuriDove - Docker Setup Script (Windows PowerShell)
 #
 #  Uso:
 #    powershell -ExecutionPolicy Bypass -File setup.ps1
@@ -14,7 +14,7 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "* Agroturismo Panama - Setup Docker" -ForegroundColor Green
+Write-Host "* TuriDove - Setup Docker" -ForegroundColor Green
 Write-Host ""
 
 # 1. Verificar Docker
@@ -80,7 +80,7 @@ if ($ready) {
 # 6. Resumen
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Green
-Write-Host "OK Agroturismo Panama esta corriendo" -ForegroundColor Green
+Write-Host "OK TuriDove esta corriendo" -ForegroundColor Green
 Write-Host "==================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Frontend   : http://localhost:3000"
@@ -88,9 +88,9 @@ Write-Host "  Backend API: http://localhost:3001/api/v1"
 Write-Host "  API Docs   : http://localhost:3001/api/docs"
 Write-Host ""
 Write-Host "  Credenciales iniciales:"
-Write-Host "    Admin    : admin@agroturismo.pa    / Admin123!"
+Write-Host "    Admin    : admin@turidove.com        / Admin123!"
 Write-Host "    Proveedor: finca.loma@agroturismo.pa / Proveedor123!"
-Write-Host "    Cliente  : juan.perez@gmail.com     / Cliente123!"
+Write-Host "    Cliente  : juan.perez@gmail.com      / Cliente123!"
 Write-Host ""
 Write-Host "  Comandos utiles:"
 Write-Host "    docker compose --env-file .env.docker ps       # Ver estado"
