@@ -14,7 +14,7 @@ import { DisponibilidadVehiculoDto } from './dto/disponibilidad-vehiculo.dto';
 export class VehiculosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: { page?: number; limit?: number; tipo?: string; search?: string }) {
+  async findAll(query: { page?: number; limit?: number; tipo?: string; search?: string; isFeatured?: boolean }) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
@@ -29,6 +29,9 @@ export class VehiculosService {
         { modelo: { contains: query.search, mode: 'insensitive' } },
         { placa: { contains: query.search, mode: 'insensitive' } },
       ];
+    }
+    if (query.isFeatured !== undefined) {
+      where.isFeatured = query.isFeatured;
     }
 
     const [data, total] = await Promise.all([

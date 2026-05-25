@@ -46,14 +46,17 @@ export class TransfersController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'tipo', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'featured', required: false, type: String })
   @ApiResponse({ status: 200, description: 'Lista paginada de transfers' })
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('tipo') tipo?: string,
     @Query('search') search?: string,
+    @Query('featured') featured?: string,
   ) {
-    return this.transfersService.findAll({ page, limit, tipo, search });
+    const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
+    return this.transfersService.findAll({ page, limit, tipo, search, isFeatured });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

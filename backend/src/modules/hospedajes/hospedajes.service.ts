@@ -21,6 +21,7 @@ export class HospedajesService {
     limit?: number;
     provincia?: string;
     search?: string;
+    isFeatured?: boolean;
   }) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
@@ -37,6 +38,9 @@ export class HospedajesService {
         { distrito: { contains: query.search, mode: 'insensitive' } },
         { descripcion: { contains: query.search, mode: 'insensitive' } },
       ];
+    }
+    if (query.isFeatured !== undefined) {
+      where.isFeatured = query.isFeatured;
     }
 
     const [data, total] = await Promise.all([

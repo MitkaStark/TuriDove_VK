@@ -17,6 +17,7 @@ interface PaginationParams {
   tipo?: string;
   provincia?: string;
   search?: string;
+  isFeatured?: boolean;
 }
 
 interface AuthUser {
@@ -31,7 +32,7 @@ export class ActividadesService {
   // ─── ACTIVIDADES CRUD ──────────────────────────────────────────────
 
   async findAll(params: PaginationParams) {
-    const { page = 1, limit = 10, tipo, provincia, search } = params;
+    const { page = 1, limit = 10, tipo, provincia, search, isFeatured } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -48,6 +49,9 @@ export class ActividadesService {
         { descripcion: { contains: search, mode: 'insensitive' } },
         { ubicacion: { contains: search, mode: 'insensitive' } },
       ];
+    }
+    if (isFeatured !== undefined) {
+      where.isFeatured = isFeatured;
     }
 
     const [data, total] = await Promise.all([

@@ -41,17 +41,21 @@ export class HospedajesController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'provincia', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'featured', required: false, type: String })
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('provincia') provincia?: string,
     @Query('search') search?: string,
+    @Query('featured') featured?: string,
   ) {
+    const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
     return this.hospedajesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       provincia,
       search,
+      isFeatured,
     });
   }
 

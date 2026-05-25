@@ -49,6 +49,7 @@ export class ActividadesController {
   @ApiQuery({ name: 'tipo', required: false, type: String })
   @ApiQuery({ name: 'provincia', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'featured', required: false, type: String })
   @ApiResponse({ status: 200, description: 'Lista paginada de actividades' })
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -56,8 +57,10 @@ export class ActividadesController {
     @Query('tipo') tipo?: string,
     @Query('provincia') provincia?: string,
     @Query('search') search?: string,
+    @Query('featured') featured?: string,
   ) {
-    return this.actividadesService.findAll({ page, limit, tipo, provincia, search });
+    const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
+    return this.actividadesService.findAll({ page, limit, tipo, provincia, search, isFeatured });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
