@@ -8,10 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validators";
 import { useAuth } from "@/hooks/use-auth";
 import { Role } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 const roleDashboard: Record<string, string> = {
   [Role.ADMIN]: "/admin",
@@ -48,63 +44,68 @@ export default function LoginPage() {
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4 pt-6">
-          <h2 className="text-center text-xl font-semibold">Iniciar Sesión</h2>
+    <div className="bg-white rounded-2xl shadow-sm border border-navy-100/50 p-8 max-w-md w-full">
+      <h1 className="text-2xl font-display font-bold text-navy-800 text-center mb-2">
+        Iniciar sesión
+      </h1>
+      <p className="text-sm text-navy-400 font-body text-center mb-8">
+        Accede a tu cuenta de TuriDove
+      </p>
 
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Correo Electrónico
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="tu@correo.com"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
           )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="tu@correo.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Contraseña
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="********"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="********"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+        <button
+          type="submit"
+          disabled={loginMutation.isPending}
+          className="w-full py-2.5 rounded-full bg-gradient-to-r from-gold-400 to-gold-500 text-white font-body font-semibold text-sm hover:from-gold-500 hover:to-gold-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loginMutation.isPending ? "Ingresando..." : "Ingresar"}
+        </button>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loginMutation.isPending}
-          >
-            {loginMutation.isPending ? "Ingresando..." : "Ingresar"}
-          </Button>
-        </CardContent>
-
-        <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
-            No tienes cuenta?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
-              Regístrate aqui
-            </Link>
-          </p>
-        </CardFooter>
+        <p className="text-sm text-navy-400 font-body text-center">
+          ¿No tienes cuenta?{" "}
+          <Link href="/register" className="text-gold-600 hover:text-gold-700 font-semibold">
+            Regístrate
+          </Link>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }

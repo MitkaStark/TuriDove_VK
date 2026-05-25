@@ -8,10 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@/lib/validators";
 import { useAuth } from "@/hooks/use-auth";
 import { Role } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -58,90 +54,142 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4 pt-6">
-          <h2 className="text-center text-xl font-semibold">Crear Cuenta</h2>
+    <div className="bg-white rounded-2xl shadow-sm border border-navy-100/50 p-8 max-w-md w-full">
+      <h1 className="text-2xl font-display font-bold text-navy-800 text-center mb-2">
+        Crear cuenta
+      </h1>
+      <p className="text-sm text-navy-400 font-body text-center mb-8">
+        Únete a TuriDove
+      </p>
 
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="nombre" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+              Nombre
+            </label>
+            <input
+              id="nombre"
+              placeholder="Juan"
+              className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+              {...register("nombre")}
+            />
+            {errors.nombre && (
+              <p className="mt-1 text-sm text-red-600">{errors.nombre.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="apellido" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+              Apellido
+            </label>
+            <input
+              id="apellido"
+              placeholder="Perez"
+              className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+              {...register("apellido")}
+            />
+            {errors.apellido && (
+              <p className="mt-1 text-sm text-red-600">{errors.apellido.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Correo Electrónico
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="tu@correo.com"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
           )}
+        </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" placeholder="Juan" {...register("nombre")} />
-              {errors.nombre && (
-                <p className="text-sm text-destructive">{errors.nombre.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apellido">Apellido</Label>
-              <Input id="apellido" placeholder="Perez" {...register("apellido")} />
-              {errors.apellido && (
-                <p className="text-sm text-destructive">{errors.apellido.message}</p>
-              )}
-            </div>
-          </div>
+        <div>
+          <label htmlFor="telefono" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Teléfono (opcional)
+          </label>
+          <input
+            id="telefono"
+            placeholder="+507-6000-0000"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("telefono")}
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
-            <Input id="email" type="email" placeholder="tu@correo.com" {...register("email")} />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
+        <div>
+          <label className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Tipo de Cuenta
+          </label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger className="w-full border-navy-200 text-sm font-body text-navy-800 focus:ring-gold-400/50 focus:border-gold-400">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={Role.CLIENTE}>Cliente - Reservar experiencias</SelectItem>
+              <SelectItem value={Role.PROVEEDOR}>Proveedor - Ofrecer servicios</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="telefono">Teléfono (opcional)</Label>
-            <Input id="telefono" placeholder="+507-6000-0000" {...register("telefono")} />
-          </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Contraseña
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Min. 8 caracteres"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label>Tipo de Cuenta</Label>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={Role.CLIENTE}>Cliente - Reservar experiencias</SelectItem>
-                <SelectItem value={Role.PROVEEDOR}>Proveedor - Ofrecer servicios</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-body font-medium text-navy-700 mb-1.5">
+            Confirmar Contraseña
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Repetir contraseña"
+            className="w-full px-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors"
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword && (
+            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" placeholder="Min. 8 caracteres" {...register("password")} />
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
-            )}
-          </div>
+        <button
+          type="submit"
+          disabled={registerMutation.isPending}
+          className="w-full py-2.5 rounded-full bg-gradient-to-r from-gold-400 to-gold-500 text-white font-body font-semibold text-sm hover:from-gold-500 hover:to-gold-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {registerMutation.isPending ? "Registrando..." : "Crear Cuenta"}
+        </button>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-            <Input id="confirmPassword" type="password" placeholder="Repetir contraseña" {...register("confirmPassword")} />
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-            {registerMutation.isPending ? "Registrando..." : "Crear Cuenta"}
-          </Button>
-        </CardContent>
-
-        <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
-            Ya tienes cuenta?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-              Inicia sesión
-            </Link>
-          </p>
-        </CardFooter>
+        <p className="text-sm text-navy-400 font-body text-center">
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/login" className="text-gold-600 hover:text-gold-700 font-semibold">
+            Inicia sesión
+          </Link>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }
