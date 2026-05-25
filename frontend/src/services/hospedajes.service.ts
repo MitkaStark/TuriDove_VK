@@ -68,3 +68,9 @@ export const hospedajesService = {
     await api.post(`/hospedajes/${hospedajeId}/disponibilidad`, payload);
   },
 };
+
+export async function getFeaturedHospedajes(limit = 6) {
+  const { data } = await api.get('/hospedajes', { params: { featured: 'true', limit } });
+  // Backend wraps responses; extract the actual list
+  return (data?.data?.data ?? data?.data ?? data?.items ?? data ?? []) as any[];
+}

@@ -57,3 +57,8 @@ export const vehiculosService = {
     await api.post(`/vehiculos/${vehiculoId}/disponibilidad`, payload);
   },
 };
+
+export async function getFeaturedVehiculos(limit = 3) {
+  const { data } = await api.get('/vehiculos', { params: { limit } });
+  return (data?.data?.data ?? data?.data ?? data?.items ?? data ?? []) as any[];
+}

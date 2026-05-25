@@ -71,3 +71,8 @@ export const actividadesService = {
     return data;
   },
 };
+
+export async function getFeaturedActividades(limit = 3) {
+  const { data } = await api.get('/actividades', { params: { featured: 'true', limit } });
+  return (data?.data?.data ?? data?.data ?? data?.items ?? data ?? []) as any[];
+}
