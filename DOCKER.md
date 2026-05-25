@@ -1,4 +1,4 @@
-# Docker - Agroturismo Panamá
+# Docker - TuriDove
 
 Dockerización del proyecto para despliegue en producción.
 
@@ -11,7 +11,7 @@ Tres servicios orquestados con `docker-compose`:
 - **frontend** (puerto `3000`) — Next.js 15 en modo standalone
 
 Volúmenes persistentes:
-- `agroturismo_postgres_data` — Datos de PostgreSQL
+- `turidove_postgres_data` — Datos de PostgreSQL
 - `./backend/uploads` — Imágenes subidas por usuarios (bind mount)
 
 ## Requisitos
@@ -85,7 +85,7 @@ docker compose down -v
 
 # Entrar al contenedor
 docker compose exec backend sh
-docker compose exec postgres psql -U postgres -d agroturismo
+docker compose exec postgres psql -U postgres -d turidove
 
 # Rebuild sin caché (tras cambios en Dockerfile)
 docker compose build --no-cache
@@ -97,8 +97,8 @@ docker compose build --no-cache
 
 1. **Clonar el repositorio en el servidor:**
    ```bash
-   git clone https://github.com/MitkaStark/Agroturismo.git
-   cd Agroturismo
+   git clone https://github.com/MitkaStark/TuriDove.git
+   cd TuriDove
    ```
 
 2. **Configurar variables de entorno de producción:**
@@ -113,8 +113,8 @@ docker compose build --no-cache
    JWT_SECRET=<string aleatorio de 48+ caracteres>
 
    # Cambiar por los dominios reales
-   NEXT_PUBLIC_API_URL=https://api.tudominio.com/api/v1
-   CORS_ORIGIN=https://tudominio.com
+   NEXT_PUBLIC_API_URL=https://api.turidove.com/api/v1
+   CORS_ORIGIN=https://turidove.com
 
    # Cambiar la contraseña de Postgres
    POSTGRES_PASSWORD=<contraseña fuerte>
@@ -135,7 +135,7 @@ docker compose build --no-cache
 5. **Verificar:**
    ```bash
    docker compose --env-file .env.docker ps
-   curl https://api.tudominio.com/api/v1/hospedajes
+   curl https://api.turidove.com/api/v1/hospedajes
    ```
 
 ### ¿Qué incluye el repositorio?
@@ -155,7 +155,7 @@ Si agregas datos importantes en desarrollo y quieres que queden en la imagen:
 
 ```bash
 PGPASSWORD="ServBay.dev" pg_dump -U postgres -h localhost -p 5432 \
-  --no-owner --no-acl --clean --if-exists agroturismo \
+  --no-owner --no-acl --clean --if-exists turidove \
   > docker/postgres/init/01-dump.sql
 ```
 

@@ -33,8 +33,8 @@ Y además en el servidor:
 
 ```bash
 ssh user@servidor
-git clone https://github.com/MitkaStark/Agroturismo.git
-cd Agroturismo
+git clone https://github.com/MitkaStark/TuriDove.git
+cd TuriDove
 ```
 
 ### 2. Configurar variables de entorno
@@ -44,11 +44,11 @@ cp .env.docker.example .env.docker
 nano .env.docker  # o vim
 ```
 
-Ejemplo de `.env.docker` para producción con dominio `agroturismo.pa`:
+Ejemplo de `.env.docker` para producción con dominio `turidove.com`:
 
 ```env
 # PostgreSQL
-POSTGRES_DB=agroturismo
+POSTGRES_DB=turidove
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=ZxA9fKt2PqLm8Nv5BcYeW3jHsRdE  # contraseña fuerte
 POSTGRES_PORT=5432  # o cualquier puerto libre
@@ -56,10 +56,10 @@ POSTGRES_PORT=5432  # o cualquier puerto libre
 # Backend
 JWT_SECRET=kYs9zQ7bVcD4fRh2pL6mXn8jWgTvUeAaBsC3dF5GhI6jKlMnOpQrStUvWxYz
 JWT_EXPIRATION=7d
-CORS_ORIGIN=https://agroturismo.pa,https://www.agroturismo.pa
+CORS_ORIGIN=https://turidove.com,https://www.turidove.com
 
 # Frontend
-NEXT_PUBLIC_API_URL=https://api.agroturismo.pa/api/v1
+NEXT_PUBLIC_API_URL=https://api.turidove.com/api/v1
 ```
 
 ### 3. Levantar la aplicación
@@ -85,11 +85,11 @@ sudo apt update && sudo apt install caddy
 
 Configurar `/etc/caddy/Caddyfile`:
 ```caddyfile
-agroturismo.pa, www.agroturismo.pa {
+turidove.com, www.turidove.com {
     reverse_proxy localhost:3000
 }
 
-api.agroturismo.pa {
+api.turidove.com {
     reverse_proxy localhost:3001
 }
 ```
@@ -103,11 +103,11 @@ Caddy genera automáticamente certificados TLS con Let's Encrypt.
 
 ### Alternativa con Nginx
 
-Si prefieres Nginx, ejemplo de configuración en `/etc/nginx/sites-available/agroturismo`:
+Si prefieres Nginx, ejemplo de configuración en `/etc/nginx/sites-available/turidove`:
 
 ```nginx
 server {
-    server_name agroturismo.pa www.agroturismo.pa;
+    server_name turidove.com www.turidove.com;
     listen 80;
     location / {
         proxy_pass http://localhost:3000;
@@ -119,7 +119,7 @@ server {
 }
 
 server {
-    server_name api.agroturismo.pa;
+    server_name api.turidove.com;
     listen 80;
     location / {
         proxy_pass http://localhost:3001;
@@ -134,7 +134,7 @@ server {
 
 Luego configurar TLS con certbot:
 ```bash
-sudo certbot --nginx -d agroturismo.pa -d www.agroturismo.pa -d api.agroturismo.pa
+sudo certbot --nginx -d turidove.com -d www.turidove.com -d api.turidove.com
 ```
 
 ### 5. Verificar
@@ -144,10 +144,10 @@ sudo certbot --nginx -d agroturismo.pa -d www.agroturismo.pa -d api.agroturismo.
 docker compose --env-file .env.docker ps
 
 # API responde
-curl https://api.agroturismo.pa/api/v1/hospedajes?limit=1
+curl https://api.turidove.com/api/v1/hospedajes?limit=1
 
 # Frontend carga
-curl -I https://agroturismo.pa
+curl -I https://turidove.com
 ```
 
 ### 6. Cambiar contraseñas de usuarios seed
@@ -163,7 +163,7 @@ docker compose --env-file .env.docker exec backend node -e "
     const p = new PrismaClient();
     const hash = await bcrypt.hash('NUEVA_CONTRASEÑA_SEGURA', 10);
     await p.user.update({
-      where: { email: 'admin@agroturismo.pa' },
+      where: { email: 'admin@turidove.com' },
       data: { password: hash }
     });
     console.log('OK');
@@ -175,7 +175,7 @@ docker compose --env-file .env.docker exec backend node -e "
 ## 🔄 Actualizar el sitio (después de cambios en el repo)
 
 ```bash
-cd Agroturismo
+cd TuriDove
 git pull
 docker compose --env-file .env.docker up -d --build
 ```
@@ -188,34 +188,34 @@ Prisma se aplican automáticamente al reiniciar el backend.
 Programar un cron diario:
 
 ```bash
-# Crear script /opt/backups/agroturismo-backup.sh
-mkdir -p /opt/backups/agroturismo
-cat > /opt/backups/agroturismo-backup.sh <<'EOF'
+# Crear script /opt/backups/turidove-backup.sh
+mkdir -p /opt/backups/turidove
+cat > /opt/backups/turidove-backup.sh <<'EOF'
 #!/bin/bash
 DATE=$(date +%Y%m%d-%H%M%S)
-docker exec agroturismo_db pg_dump -U postgres -d agroturismo --no-owner --clean --if-exists \
-  | gzip > /opt/backups/agroturismo/backup-${DATE}.sql.gz
+docker exec turidove_vk_db pg_dump -U postgres -d turidove --no-owner --clean --if-exists \
+  | gzip > /opt/backups/turidove/backup-${DATE}.sql.gz
 # Mantener solo los últimos 30 backups
-ls -t /opt/backups/agroturismo/*.sql.gz | tail -n +31 | xargs -r rm
+ls -t /opt/backups/turidove/*.sql.gz | tail -n +31 | xargs -r rm
 EOF
 
-chmod +x /opt/backups/agroturismo-backup.sh
+chmod +x /opt/backups/turidove-backup.sh
 
 # Cron diario a las 3am
-echo "0 3 * * * /opt/backups/agroturismo-backup.sh" | sudo crontab -
+echo "0 3 * * * /opt/backups/turidove-backup.sh" | sudo crontab -
 ```
 
 **Backup de imágenes** (ya están en `backend/uploads/`, bind-mount persistente):
 ```bash
-rsync -av /ruta/Agroturismo/backend/uploads/ /opt/backups/agroturismo-uploads/
+rsync -av /ruta/TuriDove/backend/uploads/ /opt/backups/turidove-uploads/
 ```
 
 ## 🔄 Restaurar desde backup
 
 ```bash
 # Descomprimir y restaurar
-gunzip -c /opt/backups/agroturismo/backup-YYYYMMDD.sql.gz \
-  | docker exec -i agroturismo_db psql -U postgres -d agroturismo
+gunzip -c /opt/backups/turidove/backup-YYYYMMDD.sql.gz \
+  | docker exec -i turidove_vk_db psql -U postgres -d turidove
 ```
 
 ## 📊 Monitoreo
@@ -228,7 +228,7 @@ docker compose --env-file .env.docker logs -f backend    # solo backend
 
 **Uso de recursos:**
 ```bash
-docker stats agroturismo_api agroturismo_web agroturismo_db
+docker stats turidove_vk_api turidove_vk_web turidove_vk_db
 ```
 
 ## 🔧 Troubleshooting
