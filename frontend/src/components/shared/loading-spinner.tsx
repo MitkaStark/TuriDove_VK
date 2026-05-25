@@ -6,16 +6,16 @@ interface LoadingSpinnerProps {
 }
 
 const sizeClasses = {
-  sm: "h-4 w-4 border-2",
-  md: "h-8 w-8 border-2",
-  lg: "h-12 w-12 border-3",
+  sm: "h-4 w-4",
+  md: "h-8 w-8",
+  lg: "h-12 w-12",
 };
 
 export function LoadingSpinner({ className, size = "md" }: LoadingSpinnerProps) {
   return (
     <div
       className={cn(
-        "animate-spin rounded-full border-solid border-primary border-t-transparent",
+        "border-2 border-gold-400 border-t-transparent rounded-full animate-spin",
         sizeClasses[size],
         className
       )}

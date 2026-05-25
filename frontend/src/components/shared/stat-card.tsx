@@ -1,5 +1,4 @@
 import { type LucideIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -20,25 +19,18 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {change !== undefined && trend && (
-          <p
-            className={cn(
-              "text-xs",
-              trend === "up" ? "text-green-600" : "text-red-600"
-            )}
-          >
-            {trend === "up" ? "+" : "-"}
-            {Math.abs(change)}% from last period
-          </p>
-        )}
-      </CardContent>
-    </Card>
+    <div className={cn("bg-white rounded-2xl shadow-card p-5 sm:p-6", className)}>
+      <div className="flex items-start justify-between">
+        <p className="text-xs text-navy-400 font-body uppercase tracking-[0.1em]">{title}</p>
+        {Icon && <Icon className="h-4 w-4 text-navy-300 shrink-0" />}
+      </div>
+      <p className="text-3xl font-display font-bold text-navy-800 mt-2">{value}</p>
+      {change !== undefined && trend && (
+        <p className="text-xs text-gold-500 font-medium mt-1">
+          {trend === "up" ? "+" : "-"}
+          {Math.abs(change)}% vs. período anterior
+        </p>
+      )}
+    </div>
   );
 }
