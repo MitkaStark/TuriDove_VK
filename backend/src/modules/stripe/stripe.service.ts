@@ -11,7 +11,7 @@ export class StripeService {
     if (!key) {
       this.logger.warn('STRIPE_SECRET_KEY not configured — Stripe calls will fail');
     }
-    this.stripe = new Stripe(key ?? 'sk_test_placeholder', { apiVersion: '2024-06-20' as any });
+    this.stripe = new Stripe(key ?? 'sk_test_placeholder', { apiVersion: '2026-04-22.dahlia' as any });
   }
 
   toCents(amountUsd: number): number {
