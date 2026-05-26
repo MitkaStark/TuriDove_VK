@@ -102,15 +102,16 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hospedajes       Hospedaje[]
-  actividades      Actividad[]
-  transfers        Transfer[]
-  vehiculos        Vehiculo[]
-  reservas         Reserva[]
-  pagos            Pago[]
-  auditLogs        AuditLog[]
-  paquetes         PaqueteActividad[]
-  comisiones       Comision[]
+  hospedajes          Hospedaje[]
+  actividades         Actividad[]
+  transfers           Transfer[]
+  vehiculos           Vehiculo[]
+  reservas            Reserva[]
+  pagos               Pago[]
+  auditLogs           AuditLog[]
+  paquetes            PaqueteActividad[]
+  comisiones          Comision[]
+  paquetesProveedor   Paquete[]          @relation("PaquetesDeProveedor")
 
   @@map("users")
 }
@@ -141,6 +142,7 @@ model Hospedaje {
   habitaciones       Habitacion[]
   tarifas            TarifaHospedaje[]
   reservaHospedajes  ReservaHospedaje[]
+  paquetes           Paquete[]
 
   @@index([proveedorId])
   @@index([provincia])
@@ -164,6 +166,7 @@ model Habitacion {
   disponibilidades DisponibilidadHospedaje[]
   tarifas          TarifaHospedaje[]
   reservas         ReservaHospedaje[]
+  paquetes         Paquete[]
 
   @@index([hospedajeId])
   @@map("habitaciones")
@@ -233,6 +236,7 @@ model Actividad {
   paquetes           PaqueteActividad[]
   calendarios        CalendarioActividad[]
   reservaActividades ReservaActividad[]
+  paquetesTuridove   Paquete[]          @relation("PaquetesTuridoveActividad")
 
   @@index([proveedorId])
   @@index([provincia])
@@ -377,6 +381,7 @@ model Vehiculo {
   vehiculoTransfers    VehiculoTransfer[]
   disponibilidades     DisponibilidadVehiculo[]
   reservaVehiculos     ReservaVehiculo[]
+  paquetes             Paquete[]
 
   @@index([proveedorId])
   @@index([tipo])
@@ -435,6 +440,7 @@ model Reserva {
   reservaActividades ReservaActividad[]
   reservaTransfers   ReservaTransfer[]
   reservaVehiculos   ReservaVehiculo[]
+  reservaPaquetes    ReservaPaquete[]
   pagos              Pago[]
   comisiones         Comision[]
 
@@ -560,6 +566,55 @@ model Comision {
   @@index([proveedorId])
   @@index([estado])
   @@map("comisiones")
+}
+
+model Paquete {
+  id                  String   @id @default(uuid())
+  nombre              String
+  slug                String   @unique
+  descripcion         String
+  hospedajeId         String   @map("hospedaje_id")
+  habitacionId        String   @map("habitacion_id")
+  actividadId         String?  @map("actividad_id")
+  vehiculoId          String?  @map("vehiculo_id")
+  diasDuracion        Int      @map("dias_duracion")
+  noches              Int
+  descuentoPorcentaje Decimal  @db.Decimal(5, 2) @default(0) @map("descuento_porcentaje")
+  imagenPrincipal     String?  @map("imagen_principal")
+  isFeatured          Boolean  @default(false) @map("is_featured")
+  isActive            Boolean  @default(true) @map("is_active")
+  validoDesde         DateTime @map("valido_desde")
+  validoHasta         DateTime @map("valido_hasta")
+  proveedorId         String?  @map("proveedor_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  hospedaje  Hospedaje  @relation(fields: [hospedajeId], references: [id])
+  habitacion Habitacion @relation(fields: [habitacionId], references: [id])
+  actividad  Actividad? @relation("PaquetesTuridoveActividad", fields: [actividadId], references: [id])
+  vehiculo   Vehiculo?  @relation(fields: [vehiculoId], references: [id])
+  proveedor  User?      @relation("PaquetesDeProveedor", fields: [proveedorId], references: [id])
+  reservas   ReservaPaquete[]
+
+  @@index([slug])
+  @@index([isFeatured, isActive])
+  @@map("paquetes")
+}
+
+model ReservaPaquete {
+  id          String   @id @default(uuid())
+  reservaId   String   @map("reserva_id")
+  paqueteId   String   @map("paquete_id")
+  fechaInicio DateTime @map("fecha_inicio")
+  huespedes   Int      @default(1)
+  precioFinal Decimal  @db.Decimal(10, 2) @map("precio_final")
+
+  reserva Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  paquete Paquete @relation(fields: [paqueteId], references: [id])
+
+  @@index([reservaId])
+  @@index([paqueteId])
+  @@map("reserva_paquetes")
 }
 
 model AuditLog {
