@@ -7,11 +7,11 @@ import { UserDropdown } from './user-dropdown';
 import { MobileMenu } from './mobile-menu';
 
 const NAV_LINKS = [
-  { href: '/', label: 'Inicio' },
   { href: '/hospedajes', label: 'Hoteles' },
   { href: '/paquetes', label: 'Paquetes' },
   { href: '/actividades', label: 'Actividades' },
-  { href: '/#contacto', label: 'Contacto' },
+  { href: '/transfers', label: 'Transfers' },
+  { href: '/vehiculos', label: 'Vehículos' },
 ];
 
 export function Header() {
