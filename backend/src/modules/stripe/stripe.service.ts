@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import StripeLib = require('stripe');
 
-// In stripe@22 (CJS export = pattern), use the class type via the namespace
+// stripe@22 exports via `export = StripeConstructor`; sub-namespace types
+// (Event, Refund) are not re-exported by StripeConstructor, so we type the
+// instance with InstanceType and use `any` for those return types.
 type StripeInstance = InstanceType<typeof StripeLib>;
-type StripeEvent = StripeLib.Event;
-type StripeRefund = StripeLib.Refund;
 
 @Injectable()
 export class StripeService {
@@ -53,13 +53,13 @@ export class StripeService {
     return { url: session.url, sessionId: session.id };
   }
 
-  verifyWebhook(rawBody: Buffer, signature: string): StripeEvent {
+  verifyWebhook(rawBody: Buffer, signature: string): any {
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET no configurada');
     return this.stripe.webhooks.constructEvent(rawBody, signature, secret);
   }
 
-  async refund(paymentIntentId: string): Promise<StripeRefund> {
+  async refund(paymentIntentId: string): Promise<any> {
     return this.stripe.refunds.create({ payment_intent: paymentIntentId });
   }
 }
