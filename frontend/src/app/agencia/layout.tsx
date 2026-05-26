@@ -3,7 +3,7 @@
 import { AuthGuard } from "@/components/shared/auth-guard";
 import { DashboardLayout } from "@/components/shared/dashboard-layout";
 import { Role } from "@/types";
-import { LayoutDashboard, Home, Activity, Bus, Car, Calendar, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Home, Activity, Bus, Car, Calendar, BarChart3, Package } from "lucide-react";
 
 const sidebarItems = [
   { title: "Dashboard", href: "/agencia", icon: LayoutDashboard },
@@ -11,6 +11,7 @@ const sidebarItems = [
   { title: "Actividades", href: "/agencia/actividades", icon: Activity },
   { title: "Transfers", href: "/agencia/transfers", icon: Bus },
   { title: "Vehiculos", href: "/agencia/vehiculos", icon: Car },
+  { title: "Paquetes", href: "/agencia/paquetes", icon: Package },
   { title: "Reservas", href: "/agencia/reservas", icon: Calendar },
   { title: "Finanzas", href: "/agencia/financiero", icon: BarChart3 },
 ];
