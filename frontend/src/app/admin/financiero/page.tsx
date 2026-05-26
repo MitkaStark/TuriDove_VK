@@ -53,7 +53,7 @@ export default function AdminFinancieroPage() {
 
   const stats = [
     { title: en ? "Total Revenue" : "Ingresos Totales", value: `$${(ingresos.total || 0).toFixed(2)}`, icon: DollarSign },
-    { title: en ? "Lodging" : "Hospedajes", value: `$${(ingresos.hospedajes || 0).toFixed(2)}`, icon: Home },
+    { title: en ? "Lodging" : "Hoteles", value: `$${(ingresos.hospedajes || 0).toFixed(2)}`, icon: Home },
     { title: en ? "Activities" : "Actividades", value: `$${(ingresos.actividades || 0).toFixed(2)}`, icon: Activity },
     { title: "Transfers", value: `$${(ingresos.transfers || 0).toFixed(2)}`, icon: Bus },
     { title: en ? "Vehicles" : "Vehiculos", value: `$${(ingresos.vehiculos || 0).toFixed(2)}`, icon: Car },
@@ -68,7 +68,7 @@ export default function AdminFinancieroPage() {
     { key: "nombre", header: en ? "Provider" : "Proveedor" },
     { key: "email", header: "Email" },
     { key: "role", header: en ? "Role" : "Rol", render: (p) => <Badge variant="outline">{p.role}</Badge> },
-    { key: "hospedajes", header: en ? "Lodging" : "Hospedajes" },
+    { key: "hospedajes", header: en ? "Lodging" : "Hoteles" },
     { key: "actividades", header: en ? "Activities" : "Actividades" },
     { key: "transfers", header: "Transfers" },
     { key: "vehiculos", header: en ? "Vehicles" : "Vehiculos" },
@@ -129,7 +129,7 @@ export default function AdminFinancieroPage() {
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="p-3 flex items-center gap-2"><Home className="h-4 w-4 text-green-600" />{en ? "Lodging" : "Hospedajes"}</td>
+                <td className="p-3 flex items-center gap-2"><Home className="h-4 w-4 text-green-600" />{en ? "Lodging" : "Hoteles"}</td>
                 <td className="p-3 text-right">${(ingresos.hospedajes || 0).toFixed(2)}</td>
                 <td className="p-3 text-center"><Badge variant="outline" className="bg-green-50">{margins.hospedajes}%</Badge></td>
                 <td className="p-3 text-right font-semibold text-green-700">${gananciaHosp.toFixed(2)}</td>

@@ -132,12 +132,12 @@ export default function AdminHospedajesPage() {
 
   const createMut = useMutation({
     mutationFn: (p: any) => hospedajesService.create(p),
-    onSuccess: () => { toast.success("Hospedaje creado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setCreateOpen(false); createReset(); setCreateImages([]); setCreatePrincipal(""); setCreateAmenidades([]); },
+    onSuccess: () => { toast.success("Hotel creado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setCreateOpen(false); createReset(); setCreateImages([]); setCreatePrincipal(""); setCreateAmenidades([]); },
     onError: (e: any) => toast.error(e?.response?.data?.message || "Error al crear"),
   });
   const editMut = useMutation({
     mutationFn: ({ id, p }: { id: string; p: any }) => hospedajesService.update(id, p),
-    onSuccess: () => { toast.success("Hospedaje actualizado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setEditOpen(false); },
+    onSuccess: () => { toast.success("Hotel actualizado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setEditOpen(false); },
     onError: (e: any) => toast.error(e?.response?.data?.message || "Error al actualizar"),
   });
   const toggleMut = useMutation({
@@ -147,7 +147,7 @@ export default function AdminHospedajesPage() {
   });
   const deleteMut = useMutation({
     mutationFn: (id: string) => hospedajesService.delete(id),
-    onSuccess: () => { toast.success("Hospedaje eliminado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setDeleteOpen(false); },
+    onSuccess: () => { toast.success("Hotel eliminado"); qc.invalidateQueries({ queryKey: ["admin", "hospedajes"] }); setDeleteOpen(false); },
     onError: (e: any) => toast.error(e?.response?.data?.message || "Error al eliminar"),
   });
 
@@ -224,13 +224,13 @@ export default function AdminHospedajesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Hospedajes" description="Gestión de hospedajes del sistema" action={<Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Nuevo Hospedaje</Button>} />
-      <DataTable columns={columns} data={Array.isArray(items) ? items : []} loading={isLoading} searchPlaceholder="Buscar hospedaje..." onSearch={setSearch} searchValue={search} emptyMessage="No se encontraron hospedajes" />
+      <PageHeader title="Hoteles" description="Gestión de hoteles del sistema" action={<Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Nuevo Hotel</Button>} />
+      <DataTable columns={columns} data={Array.isArray(items) ? items : []} loading={isLoading} searchPlaceholder="Buscar hotel..." onSearch={setSearch} searchValue={search} emptyMessage="No se encontraron hoteles" />
 
       {/* Crear */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Nuevo Hospedaje</DialogTitle><DialogDescription>Completa los datos del hospedaje.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Nuevo Hotel</DialogTitle><DialogDescription>Completa los datos del hotel.</DialogDescription></DialogHeader>
           <form onSubmit={cSubmit((d) => createMut.mutate({ ...d, imagenes: createImages, imagenPrincipal: createPrincipal || undefined, amenidades: createAmenidades }))}>
             {formFields(cReg, cErr, createAmenidades, setCreateAmenidades)}
             <div className="mt-4">
@@ -247,7 +247,7 @@ export default function AdminHospedajesPage() {
       {/* Editar */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Editar Hospedaje</DialogTitle><DialogDescription>Modifica los datos del hospedaje.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Editar Hotel</DialogTitle><DialogDescription>Modifica los datos del hotel.</DialogDescription></DialogHeader>
           <form onSubmit={eSubmit((d) => sel && editMut.mutate({ id: sel.id, p: { ...d, imagenes: editImages, imagenPrincipal: editPrincipal || undefined, amenidades: editAmenidades } }))}>
             {formFields(eReg, eErr, editAmenidades, setEditAmenidades)}
             <div className="mt-4">
@@ -264,7 +264,7 @@ export default function AdminHospedajesPage() {
       {/* Detalles */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Detalles del Hospedaje</DialogTitle><DialogDescription>Información completa.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Detalles del Hotel</DialogTitle><DialogDescription>Información completa.</DialogDescription></DialogHeader>
           {sel && (
             <div className="space-y-4">
               {/* Gallery */}
@@ -304,7 +304,7 @@ export default function AdminHospedajesPage() {
 
       {/* Eliminar */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent><DialogHeader><DialogTitle>Eliminar Hospedaje</DialogTitle><DialogDescription>Esta accion no se puede deshacer.</DialogDescription></DialogHeader>
+        <DialogContent><DialogHeader><DialogTitle>Eliminar Hotel</DialogTitle><DialogDescription>Esta accion no se puede deshacer.</DialogDescription></DialogHeader>
           {sel && (<div className="space-y-4"><div className="rounded-md bg-destructive/10 p-4"><p className="text-sm">Eliminar <strong>{sel.nombre}</strong> permanentemente?</p></div>
             <DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancelar</Button><Button variant="destructive" disabled={deleteMut.isPending} onClick={() => deleteMut.mutate(sel.id)}>{deleteMut.isPending ? "Eliminando..." : "Eliminar"}</Button></DialogFooter></div>)}
         </DialogContent>

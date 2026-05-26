@@ -7,7 +7,7 @@ import { LayoutDashboard, Home, Activity, Bus, Car, Calendar, BarChart3 } from "
 
 const sidebarItems = [
   { title: "Dashboard", href: "/agencia", icon: LayoutDashboard },
-  { title: "Hospedajes", href: "/agencia/hospedajes", icon: Home },
+  { title: "Hoteles", href: "/agencia/hospedajes", icon: Home },
   { title: "Actividades", href: "/agencia/actividades", icon: Activity },
   { title: "Transfers", href: "/agencia/transfers", icon: Bus },
   { title: "Vehiculos", href: "/agencia/vehiculos", icon: Car },

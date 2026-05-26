@@ -18,7 +18,7 @@ const ESTADOS = ["PENDIENTE", "CONFIRMADA", "COMPLETADA", "CANCELADA"];
 
 function getReservaTipo(r: any): string {
   const t: string[] = [];
-  if (r.reservaHospedajes?.length) t.push("Hospedaje");
+  if (r.reservaHospedajes?.length) t.push("Hotel");
   if (r.reservaActividades?.length) t.push("Actividad");
   if (r.reservaTransfers?.length) t.push("Transfer");
   if (r.reservaVehiculos?.length) t.push("Vehículo");
@@ -77,7 +77,7 @@ export default function OperadorReservasPage() {
                 <div><p className="font-medium text-muted-foreground">Cliente</p><p>{sel.cliente ? `${sel.cliente.nombre} ${sel.cliente.apellido}` : "-"}</p></div>
                 <div><p className="font-medium text-muted-foreground">Total</p><p className="text-lg font-bold text-primary">${parseFloat(sel.total).toFixed(2)}</p></div>
               </div>
-              {sel.reservaHospedajes?.length > 0 && <div><p className="text-sm font-semibold">Hospedajes</p>{sel.reservaHospedajes.map((rh: any, i: number) => <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm"><p className="font-medium">{rh.hospedaje?.nombre}</p><p className="text-muted-foreground">{new Date(rh.fechaEntrada).toLocaleDateString("es-PA")} - {new Date(rh.fechaSalida).toLocaleDateString("es-PA")} | {rh.huespedes} huésped(es)</p></div>)}</div>}
+              {sel.reservaHospedajes?.length > 0 && <div><p className="text-sm font-semibold">Hoteles</p>{sel.reservaHospedajes.map((rh: any, i: number) => <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm"><p className="font-medium">{rh.hospedaje?.nombre}</p><p className="text-muted-foreground">{new Date(rh.fechaEntrada).toLocaleDateString("es-PA")} - {new Date(rh.fechaSalida).toLocaleDateString("es-PA")} | {rh.huespedes} huésped(es)</p></div>)}</div>}
               {sel.reservaActividades?.length > 0 && <div><p className="text-sm font-semibold">Actividades</p>{sel.reservaActividades.map((ra: any, i: number) => <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm"><p className="font-medium">{ra.actividad?.nombre}</p><p className="text-muted-foreground">{new Date(ra.fecha).toLocaleDateString("es-PA")} | {ra.adultos} adulto(s)</p></div>)}</div>}
               {sel.reservaTransfers?.length > 0 && <div><p className="text-sm font-semibold">Transfers</p>{sel.reservaTransfers.map((rt: any, i: number) => <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm"><p className="font-medium">{rt.transfer?.nombre}</p><p className="text-muted-foreground">{new Date(rt.fecha).toLocaleDateString("es-PA")} | {rt.pasajeros} pasajero(s)</p></div>)}</div>}
               {sel.reservaVehiculos?.length > 0 && <div><p className="text-sm font-semibold">Vehículos</p>{sel.reservaVehiculos.map((rv: any, i: number) => <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm"><p className="font-medium">{rv.vehiculo ? `${rv.vehiculo.marca} ${rv.vehiculo.modelo}` : "-"}</p><p className="text-muted-foreground">{new Date(rv.fechaInicio).toLocaleDateString("es-PA")} - {new Date(rv.fechaFin).toLocaleDateString("es-PA")}</p></div>)}</div>}

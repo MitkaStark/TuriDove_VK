@@ -24,7 +24,7 @@ export default function HospedajesPage() {
     <div className="container-page py-12">
       {/* Header */}
       <div className="max-w-2xl">
-        <h1 className="section-heading">Hospedajes Rurales</h1>
+        <h1 className="section-heading">Hoteles y Alojamientos</h1>
         <p className="mt-3 section-subheading mx-0">
           Descubre alojamientos únicos en la naturaleza panameña, desde cabañas en el bosque nuboso hasta eco-lodges frente al mar.
         </p>
@@ -101,7 +101,7 @@ export default function HospedajesPage() {
       {hospedajes.length === 0 && (
         <div className="py-20 text-center">
           <Home className="mx-auto h-12 w-12 text-muted-foreground/30" />
-          <p className="mt-4 text-muted-foreground">No se encontraron hospedajes.</p>
+          <p className="mt-4 text-muted-foreground">No se encontraron hoteles.</p>
         </div>
       )}
     </div>

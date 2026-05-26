@@ -31,7 +31,7 @@ export default function ProveedorFinancieroPage() {
 
   const stats = [
     { title: "Ingresos", value: `$${totalIngresos.toFixed(2)}`, icon: DollarSign },
-    { title: "Mis Hospedajes", value: String(hospList.length), icon: Home },
+    { title: "Mis Hoteles", value: String(hospList.length), icon: Home },
     { title: "Mis Actividades", value: String(actList.length), icon: Activity },
     { title: "Mis Transfers", value: String(transList.length), icon: Bus },
     { title: "Mis Vehiculos", value: String(vehList.length), icon: Car },

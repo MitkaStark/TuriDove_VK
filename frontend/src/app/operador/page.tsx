@@ -12,7 +12,7 @@ const estadoColor: Record<string, string> = { CONFIRMADA: "bg-green-100 text-gre
 
 function getReservaTipo(r: any): string {
   const t: string[] = [];
-  if (r.reservaHospedajes?.length) t.push("Hospedaje");
+  if (r.reservaHospedajes?.length) t.push("Hotel");
   if (r.reservaActividades?.length) t.push("Actividad");
   if (r.reservaTransfers?.length) t.push("Transfer");
   if (r.reservaVehiculos?.length) t.push("Vehiculo");

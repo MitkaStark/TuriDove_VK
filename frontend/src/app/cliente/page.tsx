@@ -14,7 +14,7 @@ const estadoColor: Record<string, string> = { CONFIRMADA: "bg-green-100 text-gre
 
 function getReservaDesc(r: any): string {
   const items: string[] = [];
-  r.reservaHospedajes?.forEach((rh: any) => items.push(rh.hospedaje?.nombre || "Hospedaje"));
+  r.reservaHospedajes?.forEach((rh: any) => items.push(rh.hospedaje?.nombre || "Hotel"));
   r.reservaActividades?.forEach((ra: any) => items.push(ra.actividad?.nombre || "Actividad"));
   r.reservaTransfers?.forEach((rt: any) => items.push(rt.transfer?.nombre || "Transfer"));
   r.reservaVehiculos?.forEach((rv: any) => items.push(rv.vehiculo ? `${rv.vehiculo.marca} ${rv.vehiculo.modelo}` : "Vehiculo"));
@@ -49,7 +49,7 @@ export default function ClienteDashboard() {
         <CardHeader><CardTitle>Reservas Activas</CardTitle></CardHeader>
         <CardContent>
           {activas.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tienes reservas activas. Explora nuestros hospedajes y actividades!</p>
+            <p className="text-sm text-muted-foreground">No tienes reservas activas. Explora nuestros hoteles y actividades!</p>
           ) : (
             <div className="space-y-3">
               {activas.slice(0, 5).map((r: any) => (

@@ -98,14 +98,14 @@ export default function HospedajeDetailPage() {
   };
 
   if (isLoading) {
-    return <div className="container-page flex min-h-[50vh] items-center justify-center"><p className="text-muted-foreground">Cargando hospedaje...</p></div>;
+    return <div className="container-page flex min-h-[50vh] items-center justify-center"><p className="text-muted-foreground">Cargando hotel...</p></div>;
   }
 
   if (!hospedaje) {
     return (
       <div className="container-page flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Hospedaje no encontrado.</p>
-        <Link href="/hospedajes"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Volver a hospedajes</Button></Link>
+        <p className="text-muted-foreground">Hotel no encontrado.</p>
+        <Link href="/hospedajes"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Volver a hoteles</Button></Link>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function HospedajeDetailPage() {
     <div className="container-page py-10">
       {/* Back */}
       <Link href="/hospedajes" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group">
-        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a hospedajes
+        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a hoteles
       </Link>
 
       {/* Image Gallery */}

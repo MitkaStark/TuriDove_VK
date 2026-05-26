@@ -94,7 +94,7 @@ export default function AdminConfiguracionPage() {
                 <div className="space-y-2 rounded-lg border p-3">
                   <Label className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-green-600" />
-                    {language === 'en' ? 'Lodging' : 'Hospedajes'}
+                    {language === 'en' ? 'Lodging' : 'Hoteles'}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Input type="number" min="0" max="100" step="0.5" value={margins.hospedajes} onChange={(e) => updateMargin("hospedajes", e.target.value)} />
@@ -134,7 +134,7 @@ export default function AdminConfiguracionPage() {
               </div>
               <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground">{language === 'en' ? 'Summary:' : 'Resumen:'}</p>
-                <p>{language === 'en' ? 'Lodging' : 'Hospedajes'}: {margins.hospedajes}% → $100 → ${(100 * (1 + margins.hospedajes / 100)).toFixed(2)}</p>
+                <p>{language === 'en' ? 'Lodging' : 'Hoteles'}: {margins.hospedajes}% → $100 → ${(100 * (1 + margins.hospedajes / 100)).toFixed(2)}</p>
                 <p>{language === 'en' ? 'Activities' : 'Actividades'}: {margins.actividades}% → $100 → ${(100 * (1 + margins.actividades / 100)).toFixed(2)}</p>
                 <p>Transfers: {margins.transfers}% → $100 → ${(100 * (1 + margins.transfers / 100)).toFixed(2)}</p>
                 <p>{language === 'en' ? 'Vehicles' : 'Vehiculos'}: {margins.vehiculos}% → $100 → ${(100 * (1 + margins.vehiculos / 100)).toFixed(2)}</p>

@@ -18,7 +18,7 @@ const estadoColor: Record<string, string> = { CONFIRMADA: "bg-green-100 text-gre
 
 function getReservaTipo(r: any): string {
   const t: string[] = [];
-  if (r.reservaHospedajes?.length) t.push("Hospedaje");
+  if (r.reservaHospedajes?.length) t.push("Hotel");
   if (r.reservaActividades?.length) t.push("Actividad");
   if (r.reservaTransfers?.length) t.push("Transfer");
   if (r.reservaVehiculos?.length) t.push("Vehiculo");
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { title: "Usuarios", value: String(totalUsers), icon: Users },
-    { title: "Hospedajes", value: String(totalHosp), icon: Home },
+    { title: "Hoteles", value: String(totalHosp), icon: Home },
     { title: "Actividades", value: String(totalAct), icon: Activity },
     { title: "Transfers", value: String(totalTrans), icon: Bus },
     { title: "Vehiculos", value: String(totalVeh), icon: Car },

@@ -10,7 +10,7 @@ const estadoColor: Record<string, string> = { CONFIRMADA: "bg-green-100 text-gre
 
 function getDesc(r: any): string {
   const items: string[] = [];
-  r.reservaHospedajes?.forEach((rh: any) => items.push(rh.hospedaje?.nombre || "Hospedaje"));
+  r.reservaHospedajes?.forEach((rh: any) => items.push(rh.hospedaje?.nombre || "Hotel"));
   r.reservaActividades?.forEach((ra: any) => items.push(ra.actividad?.nombre || "Actividad"));
   r.reservaTransfers?.forEach((rt: any) => items.push(rt.transfer?.nombre || "Transfer"));
   r.reservaVehiculos?.forEach((rv: any) => items.push(rv.vehiculo ? `${rv.vehiculo.marca} ${rv.vehiculo.modelo}` : "Vehículo"));

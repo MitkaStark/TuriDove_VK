@@ -25,7 +25,7 @@ const ESTADOS = ["PENDIENTE", "CONFIRMADA", "COMPLETADA", "CANCELADA", "REEMBOLS
 
 function getReservaTipo(r: any): string {
   const tipos: string[] = [];
-  if (r.reservaHospedajes?.length > 0) tipos.push("Hospedaje");
+  if (r.reservaHospedajes?.length > 0) tipos.push("Hotel");
   if (r.reservaActividades?.length > 0) tipos.push("Actividad");
   if (r.reservaTransfers?.length > 0) tipos.push("Transfer");
   if (r.reservaVehiculos?.length > 0) tipos.push("Vehiculo");
@@ -135,7 +135,7 @@ export default function AdminReservasPage() {
 
               {sel.reservaHospedajes?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold">Hospedajes</p>
+                  <p className="text-sm font-semibold">Hoteles</p>
                   {sel.reservaHospedajes.map((rh: any, i: number) => (
                     <div key={i} className="mt-1 rounded bg-muted/50 p-2 text-sm">
                       <p className="font-medium">{rh.hospedaje?.nombre || rh.hospedajeId}</p>
