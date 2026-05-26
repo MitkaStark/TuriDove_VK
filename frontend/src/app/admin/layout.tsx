@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/shared/dashboard-layout";
 import { Role } from "@/types";
 import {
   LayoutDashboard, Users, Home, Activity, Bus, Car,
-  Calendar, CreditCard, BarChart3, Shield,
+  Calendar, CreditCard, BarChart3, Shield, Package,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -15,6 +15,7 @@ const sidebarItems = [
   { title: "Actividades", href: "/admin/actividades", icon: Activity },
   { title: "Transfers", href: "/admin/transfers", icon: Bus },
   { title: "Vehiculos", href: "/admin/vehiculos", icon: Car },
+  { title: "Paquetes", href: "/admin/paquetes", icon: Package },
   { title: "Reservas", href: "/admin/reservas", icon: Calendar },
   { title: "Pagos", href: "/admin/pagos", icon: CreditCard },
   { title: "Finanzas", href: "/admin/financiero", icon: BarChart3 },
