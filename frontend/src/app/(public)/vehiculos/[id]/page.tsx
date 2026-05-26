@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { vehiculosService } from "@/services/vehiculos.service";
 import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
-import { PaymentModal } from "@/components/shared/payment-modal";
+import { CheckoutSummary } from "@/components/shared/checkout-summary";
 import { applyMargin } from "@/lib/margins";
 
 const tipoColor: Record<string, string> = { SEDAN: "bg-gray-100 text-gray-800", SUV: "bg-blue-100 text-blue-800", PICKUP: "bg-amber-100 text-amber-800", VAN: "bg-green-100 text-green-800", BUS: "bg-purple-100 text-purple-800", MINIBUS: "bg-teal-100 text-teal-800" };
@@ -155,7 +155,11 @@ export default function VehiculoDetailPage() {
         </DialogContent>
       </Dialog>
 
-      <PaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} reservaId={lastReservaId} monto={lastTotal} descripcion={`Vehiculo: ${v.marca} ${v.modelo}`} />
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <CheckoutSummary reservaId={lastReservaId} total={lastTotal} description={`Vehiculo: ${v.marca} ${v.modelo}`} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

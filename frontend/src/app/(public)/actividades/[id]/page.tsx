@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { actividadesService } from "@/services/actividades.service";
 import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
-import { PaymentModal } from "@/components/shared/payment-modal";
+import { CheckoutSummary } from "@/components/shared/checkout-summary";
 import { applyMargin } from "@/lib/margins";
 
 const tipoIcons: Record<string, any> = {
@@ -169,7 +169,11 @@ export default function ActividadDetailPage() {
         </DialogContent>
       </Dialog>
 
-      <PaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} reservaId={lastReservaId} monto={lastTotal} descripcion={`Actividad: ${a.nombre}`} />
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <CheckoutSummary reservaId={lastReservaId} total={lastTotal} description={`Actividad: ${a.nombre}`} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

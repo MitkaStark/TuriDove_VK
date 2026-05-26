@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { hospedajesService } from "@/services/hospedajes.service";
-import { PaymentModal } from "@/components/shared/payment-modal";
+import { CheckoutSummary } from "@/components/shared/checkout-summary";
 import { applyMargin, getMarginPercent } from "@/lib/margins";
 import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
@@ -501,14 +501,12 @@ export default function HospedajeDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        open={paymentOpen}
-        onOpenChange={setPaymentOpen}
-        reservaId={lastReservaId}
-        monto={lastTotal}
-        descripcion={`Hospedaje: ${h.nombre}`}
-      />
+      {/* Stripe Checkout Summary */}
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <CheckoutSummary reservaId={lastReservaId} total={lastTotal} description={`Hospedaje: ${h.nombre}`} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { transfersService } from "@/services/transfers.service";
 import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
-import { PaymentModal } from "@/components/shared/payment-modal";
+import { CheckoutSummary } from "@/components/shared/checkout-summary";
 import { applyMargin } from "@/lib/margins";
 
 const tipoLabel: Record<string, string> = { AEROPUERTO: "Aeropuerto", TOUR: "Tour", PUNTO_A_PUNTO: "Punto a Punto", HOTEL: "Hotel" };
@@ -150,7 +150,11 @@ export default function TransferDetailPage() {
         </DialogContent>
       </Dialog>
 
-      <PaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} reservaId={lastReservaId} monto={lastTotal} descripcion={`Transfer: ${t.nombre}`} />
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <CheckoutSummary reservaId={lastReservaId} total={lastTotal} description={`Transfer: ${t.nombre}`} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
