@@ -144,12 +144,12 @@ Después del primer `setup.sh`, los usuarios seed tienen estas contraseñas.
 | Rol | Email | Contraseña |
 |-----|-------|-----------|
 | ADMIN | `admin@turidove.com` | `Admin123!` |
-| PROVEEDOR | `finca.loma@agroturismo.pa` | `Proveedor123!` |
-| PROVEEDOR | `aventura.chiriqui@agroturismo.pa` | `Proveedor123!` |
-| AGENCIA | `agencia.panama@agroturismo.pa` | `Agencia123!` |
-| OPERADOR | `operador@agroturismo.pa` | `Operador123!` |
-| CLIENTE | `juan.perez@gmail.com` | `Cliente123!` |
-| CLIENTE | `ana.rodriguez@gmail.com` | `Cliente123!` |
+| PROVEEDOR (París/Roma) | `paris.provider@turidove.com` | `Provider123!` |
+| PROVEEDOR (Tokio) | `asia.provider@turidove.com` | `Provider123!` |
+| AGENCIA (Santorini/Marrakech) | `boutique.agency@turidove.com` | `Agency123!` |
+| OPERADOR | `operator@turidove.com` | `Operator123!` |
+| CLIENTE | `cliente1@example.com` | `Client123!` |
+| CLIENTE | `cliente2@example.com` | `Client123!` |
 
 ---
 
