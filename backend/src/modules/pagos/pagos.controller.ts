@@ -8,6 +8,8 @@ import {
   Query,
   ParseUUIDPipe,
   UseGuards,
+  Req,
+  Headers,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PagosService } from './pagos.service';
@@ -16,6 +18,7 @@ import { PaginationDto } from '../../common/dto/pagination.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 
 @ApiTags('Pagos')
@@ -25,12 +28,33 @@ export class PagosController {
   constructor(private readonly pagosService: PagosService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Registrar un pago' })
+  @ApiOperation({ summary: 'Registrar un pago (simulado)' })
   create(
     @CurrentUser('id') userId: string,
     @Body() dto: CreatePagoDto,
   ) {
     return this.pagosService.create(userId, dto);
+  }
+
+  @Post('checkout/:reservaId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.CLIENTE, Role.ADMIN)
+  @ApiOperation({ summary: 'Crear sesion de pago Stripe Checkout' })
+  async createCheckout(
+    @Param('reservaId') reservaId: string,
+    @Req() req: any,
+  ) {
+    return this.pagosService.createCheckoutSession(reservaId, req.user.id);
+  }
+
+  @Post('webhook')
+  @Public()
+  @ApiOperation({ summary: 'Webhook de eventos Stripe (firma verificada)' })
+  async webhook(
+    @Req() req: any,
+    @Headers('stripe-signature') signature: string,
+  ) {
+    return this.pagosService.handleWebhook(req.body, signature);
   }
 
   @Get()
