@@ -4,7 +4,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { raw } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -14,9 +13,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
-
-  // Raw body for Stripe webhook signature verification
-  app.use('/api/v1/pagos/webhook', raw({ type: 'application/json' }));
 
   // Serve uploaded files as static
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });

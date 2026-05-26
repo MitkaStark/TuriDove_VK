@@ -54,7 +54,8 @@ export class PagosController {
     @Req() req: any,
     @Headers('stripe-signature') signature: string,
   ) {
-    return this.pagosService.handleWebhook(req.body, signature);
+    // rawBody is populated by NestFactory.create({ rawBody: true })
+    return this.pagosService.handleWebhook(req.rawBody, signature);
   }
 
   @Get()
