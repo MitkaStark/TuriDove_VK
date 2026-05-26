@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import Stripe from 'stripe';
+import StripeLib = require('stripe');
+
+// In stripe@22 (CJS export = pattern), use the class type via the namespace
+type StripeInstance = InstanceType<typeof StripeLib>;
+type StripeEvent = StripeLib.Event;
+type StripeRefund = StripeLib.Refund;
 
 @Injectable()
 export class StripeService {
-  private readonly stripe: Stripe;
+  private readonly stripe: StripeInstance;
   private readonly logger = new Logger(StripeService.name);
 
   constructor() {
@@ -11,7 +16,9 @@ export class StripeService {
     if (!key) {
       this.logger.warn('STRIPE_SECRET_KEY not configured — Stripe calls will fail');
     }
-    this.stripe = new Stripe(key ?? 'sk_test_placeholder', { apiVersion: '2026-04-22.dahlia' as any });
+    this.stripe = new StripeLib(key ?? 'sk_test_placeholder', {
+      apiVersion: '2026-04-22.dahlia' as any,
+    });
   }
 
   toCents(amountUsd: number): number {
@@ -46,13 +53,13 @@ export class StripeService {
     return { url: session.url, sessionId: session.id };
   }
 
-  verifyWebhook(rawBody: Buffer, signature: string): Stripe.Event {
+  verifyWebhook(rawBody: Buffer, signature: string): StripeEvent {
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET no configurada');
     return this.stripe.webhooks.constructEvent(rawBody, signature, secret);
   }
 
-  async refund(paymentIntentId: string): Promise<Stripe.Refund> {
+  async refund(paymentIntentId: string): Promise<StripeRefund> {
     return this.stripe.refunds.create({ payment_intent: paymentIntentId });
   }
 }
