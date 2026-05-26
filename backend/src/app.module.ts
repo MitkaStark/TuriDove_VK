@@ -15,6 +15,7 @@ import { FinancieroModule } from './modules/financiero/financiero.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PaquetesModule } from './modules/paquetes/paquetes.module';
+import { StripeModule } from './modules/stripe/stripe.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
@@ -38,6 +39,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuditoriaModule,
     UploadsModule,
     PaquetesModule,
+    StripeModule,
   ],
   providers: [
     {
