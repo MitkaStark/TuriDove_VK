@@ -79,6 +79,7 @@ enum Temporada {
 }
 
 enum MetodoPago {
+  STRIPE
   TARJETA
   YAPPY
   TRANSFERENCIA
@@ -531,8 +532,11 @@ model Pago {
   metodo          MetodoPago
   estado          EstadoPago @default(PENDIENTE)
   referencia      String?
-  stripePaymentId String?    @map("stripe_payment_id")
-  detalles        Json?
+  stripePaymentId   String?    @map("stripe_payment_id")
+  stripeSessionId   String?    @unique @map("stripe_session_id")
+  stripeCheckoutUrl String?    @map("stripe_checkout_url")
+  stripeEventLog    Json?      @map("stripe_event_log")
+  detalles          Json?
   userId          String     @map("user_id")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
@@ -633,4 +637,14 @@ model AuditLog {
   @@index([entidad, entidadId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model StripeEvent {
+  id            String   @id @default(uuid())
+  stripeEventId String   @unique @map("stripe_event_id")
+  type          String
+  processedAt   DateTime @default(now()) @map("processed_at")
+  payload       Json
+
+  @@map("stripe_events")
 }
