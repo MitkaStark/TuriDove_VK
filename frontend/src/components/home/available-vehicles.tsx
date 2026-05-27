@@ -22,16 +22,14 @@ export async function AvailableVehicles() {
   return (
     <section className="py-14 sm:py-16 md:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8 sm:mb-10">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-navy-800 mb-2">
-              Vehículos disponibles
-            </h2>
-            <p className="text-sm text-navy-400 font-body">
-              Alquila el vehículo perfecto para tu aventura
-            </p>
-          </div>
-          <Link href="/vehiculos" className="text-sm font-body font-medium text-gold-500 hover:text-gold-600 transition-colors">
+        <div className="text-center mb-8 sm:mb-10">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold text-navy-800 mb-2">
+            Vehículos disponibles
+          </h2>
+          <p className="text-sm text-navy-400 font-body max-w-md mx-auto">
+            Alquila el vehículo perfecto para tu aventura
+          </p>
+          <Link href="/vehiculos" className="inline-block mt-4 text-sm font-body font-medium text-gold-500 hover:text-gold-600 transition-colors">
             Ver todos →
           </Link>
         </div>
@@ -43,9 +41,9 @@ export async function AvailableVehicles() {
               className="group bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
             >
               <div className="relative h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-cream-200 to-navy-100">
-                {v.imagenPrincipal && (
+                {(v.imagenPrincipal || v.imagenes?.[0]) && (
                   <Image
-                    src={v.imagenPrincipal}
+                    src={v.imagenPrincipal || v.imagenes[0]}
                     alt={`${v.marca ?? ''} ${v.modelo ?? ''}`}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

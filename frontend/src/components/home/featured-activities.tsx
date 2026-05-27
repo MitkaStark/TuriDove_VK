@@ -22,16 +22,14 @@ export async function FeaturedActivities() {
   return (
     <section className="py-14 sm:py-16 md:py-20 bg-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8 sm:mb-10">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-navy-800 mb-2">
-              Actividades destacadas
-            </h2>
-            <p className="text-sm text-navy-400 font-body">
-              Experiencias únicas que no te puedes perder
-            </p>
-          </div>
-          <Link href="/actividades" className="text-sm font-body font-medium text-gold-500 hover:text-gold-600 transition-colors">
+        <div className="text-center mb-8 sm:mb-10">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold text-navy-800 mb-2">
+            Actividades destacadas
+          </h2>
+          <p className="text-sm text-navy-400 font-body max-w-md mx-auto">
+            Experiencias únicas que no te puedes perder
+          </p>
+          <Link href="/actividades" className="inline-block mt-4 text-sm font-body font-medium text-gold-500 hover:text-gold-600 transition-colors">
             Ver todas →
           </Link>
         </div>
@@ -43,9 +41,9 @@ export async function FeaturedActivities() {
               className="group bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
             >
               <div className="relative h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-cream-200 to-navy-100">
-                {a.imagenPrincipal && (
+                {(a.imagenPrincipal || a.imagenes?.[0]) && (
                   <Image
-                    src={a.imagenPrincipal}
+                    src={a.imagenPrincipal || a.imagenes[0]}
                     alt={a.nombre}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
