@@ -2,19 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { Mountain, Sun, TreePine, Users, Waves, GraduationCap, Search, Clock, MapPin, ArrowRight, Activity } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { actividadesService } from "@/services/actividades.service";
 
 const tipoIcons: Record<string, any> = {
   AVENTURA: Mountain, GASTRONOMICA: Sun, NATURALEZA: TreePine, CULTURAL: Users, DEPORTIVA: Waves, EDUCATIVA: GraduationCap,
 };
-const tipoColor: Record<string, string> = {
-  AVENTURA: "bg-red-50 text-red-700 border-red-200", CULTURAL: "bg-purple-50 text-purple-700 border-purple-200",
-  GASTRONOMICA: "bg-amber-50 text-amber-700 border-amber-200", NATURALEZA: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  EDUCATIVA: "bg-blue-50 text-blue-700 border-blue-200", DEPORTIVA: "bg-orange-50 text-orange-700 border-orange-200",
-};
+
 const tipos = ["Todas", "AVENTURA", "GASTRONOMICA", "NATURALEZA", "CULTURAL", "DEPORTIVA", "EDUCATIVA"];
 
 export default function ActividadesPage() {
@@ -32,62 +28,108 @@ export default function ActividadesPage() {
     : [];
 
   return (
-    <div className="container-page py-12">
-      <div className="max-w-2xl">
-        <h1 className="section-heading">Actividades</h1>
-        <p className="mt-3 section-subheading mx-0">
-          Experiencias auténticas que te conectan con la naturaleza, la cultura y las tradiciones de Panamá.
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      {/* Header centrado */}
+      <div className="text-center mb-8 sm:mb-10">
+        <h1 className="text-3xl sm:text-4xl font-display font-bold text-navy-800 mb-2">
+          Actividades
+        </h1>
+        <p className="text-sm text-navy-400 font-body max-w-xl mx-auto">
+          Experiencias únicas que te conectan con la cultura, la naturaleza y los lugares más cuidados del mundo.
         </p>
       </div>
 
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="relative max-w-md flex-1">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar actividades..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-11 h-12 rounded-xl bg-muted/50 border-0 focus-visible:ring-primary/30" />
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {tipos.map((t) => (
-            <button key={t} onClick={() => setTipo(t)} className={`rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 ${tipo === t ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-              {t === "Todas" ? t : t.charAt(0) + t.slice(1).toLowerCase()}
-            </button>
-          ))}
+      {/* Buscador centrado */}
+      <div className="flex justify-center mb-6">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400 pointer-events-none" />
+          <input
+            placeholder="Buscar actividades..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 rounded-lg border border-navy-200 text-sm font-body text-navy-800 placeholder:text-navy-300 focus:outline-none focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 transition-colors bg-white"
+          />
         </div>
       </div>
 
-      <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Filtros tipos */}
+      <div className="flex flex-wrap justify-center gap-2 mb-10 sm:mb-12">
+        {tipos.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTipo(t)}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-body font-medium transition-colors ${
+              tipo === t ? "bg-navy-600 text-white" : "bg-navy-50 text-navy-500 hover:bg-navy-100"
+            }`}
+          >
+            {t === "Todas" ? t : t.charAt(0) + t.slice(1).toLowerCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {actividades.map((a: any) => {
           const Icon = tipoIcons[a.tipo] || Mountain;
+          const img = a.imagenPrincipal || a.imagenes?.[0];
           return (
-            <Link key={a.id} href={`/actividades/${a.id}`} className="group rounded-2xl overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 p-6">
-              <div className="flex items-start gap-4">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tipoColor[a.tipo]?.split(' ')[0] || 'bg-primary/10'} transition-transform duration-300 group-hover:scale-110`}>
-                  <Icon className={`h-6 w-6 ${tipoColor[a.tipo]?.split(' ')[1] || 'text-primary'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold tracking-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">{a.nombre}</h3>
+            <Link
+              key={a.id}
+              href={`/actividades/${a.id}`}
+              className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300"
+            >
+              <div className="relative aspect-[4/3] bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
+                {img ? (
+                  <Image
+                    src={img}
+                    alt={a.nombre}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <Icon className="h-10 w-10 text-navy-300" />
                   </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${tipoColor[a.tipo] || ''}`}>{a.tipo}</span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" />{a.duracionHoras}h</span>
-                  </div>
+                )}
+                <div className="absolute top-3 left-3">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium text-navy-700 shadow-sm">
+                    <Icon className="h-3 w-3" />
+                    {a.tipo.charAt(0) + a.tipo.slice(1).toLowerCase()}
+                  </span>
                 </div>
               </div>
 
-              {a.descripcion && (
-                <p className="mt-4 text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">{a.descripcion}</p>
-              )}
+              <div className="p-4 sm:p-5">
+                <h3 className="font-body font-semibold text-navy-800 text-sm sm:text-base group-hover:text-gold-600 transition-colors line-clamp-2">
+                  {a.nombre}
+                </h3>
 
-              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5" />
-                <span>{a.ubicacion || a.distrito}, {a.provincia}</span>
-              </div>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-navy-400 font-body">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {a.duracionHoras}h
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {a.ubicacion || a.provincia}
+                  </span>
+                </div>
 
-              <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Capacidad: {a.capacidadMaxima || "-"} personas</span>
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all duration-300">
-                  Reservar <ArrowRight className="h-3.5 w-3.5" />
-                </span>
+                {a.descripcion && (
+                  <p className="mt-2 text-xs text-navy-500 font-body line-clamp-2 leading-relaxed">
+                    {a.descripcion}
+                  </p>
+                )}
+
+                <div className="mt-3 pt-3 border-t border-navy-100/50 flex items-center justify-between">
+                  <span className="text-[11px] text-navy-400 font-body">
+                    Cap. {a.capacidadMaxima || "-"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-body font-semibold text-gold-500 group-hover:text-gold-600 group-hover:gap-1.5 transition-all">
+                    Reservar <ArrowRight className="h-3 w-3" />
+                  </span>
+                </div>
               </div>
             </Link>
           );
@@ -96,8 +138,8 @@ export default function ActividadesPage() {
 
       {actividades.length === 0 && (
         <div className="py-20 text-center">
-          <Activity className="mx-auto h-12 w-12 text-muted-foreground/30" />
-          <p className="mt-4 text-muted-foreground">No se encontraron actividades.</p>
+          <Activity className="mx-auto h-12 w-12 text-navy-300" />
+          <p className="mt-4 text-sm text-navy-400 font-body">No se encontraron actividades.</p>
         </div>
       )}
     </div>
