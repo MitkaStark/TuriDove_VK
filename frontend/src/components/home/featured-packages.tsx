@@ -4,7 +4,7 @@ import { formatPrice } from '@/lib/format-price';
 
 async function fetchPaquetes(): Promise<any[]> {
   try {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://backend:3001/api/v1';
+    const base = process.env.API_URL_INTERNAL ?? 'http://backend:3001/api/v1';
     const res = await fetch(`${base}/paquetes?featured=true&limit=3`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data = await res.json();

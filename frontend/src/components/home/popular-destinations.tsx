@@ -18,14 +18,13 @@ const GRADIENTS = [
   'from-yellow-400 to-amber-600',
 ];
 
-const API_PUBLIC = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-const API_INTERNAL = process.env.NEXT_PUBLIC_API_URL ?? 'http://backend:3001/api/v1';
+const API_INTERNAL = process.env.API_URL_INTERNAL ?? 'http://backend:3001/api/v1';
 
 function resolveImage(path?: string | null): string | null {
   if (!path) return null;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  const base = API_PUBLIC.replace(/\/api\/v1\/?$/, '');
-  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+  // Paths como /uploads/foo.jpg: usar relative para que pasen por el rewrite del frontend
+  return path.startsWith('/') ? path : `/${path}`;
 }
 
 async function fetchDestinos(): Promise<HospedajeDestino[]> {
