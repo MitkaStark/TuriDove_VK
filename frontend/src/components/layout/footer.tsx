@@ -6,6 +6,7 @@ const SERVICE_LINKS = [
   { href: '/hospedajes', label: 'Hoteles' },
   { href: '/paquetes', label: 'Paquetes' },
   { href: '/actividades', label: 'Actividades' },
+  { href: '/transfers', label: 'Transfers' },
   { href: '/vehiculos', label: 'Vehículos' },
 ];
 
