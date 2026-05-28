@@ -66,11 +66,15 @@ export default function VehiculoDetailPage() {
     });
   };
 
-  if (isLoading) return <div className="container-page flex min-h-[50vh] items-center justify-center"><p className="text-muted-foreground">Cargando...</p></div>;
-  if (!vehiculo) return <div className="container-page flex min-h-[50vh] flex-col items-center justify-center gap-4"><p className="text-muted-foreground">Vehiculo no encontrado.</p><Link href="/vehiculos"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Volver</Button></Link></div>;
+  if (isLoading) return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] items-center justify-center"><p className="text-sm text-navy-400 font-body">Cargando...</p></div>;
+  if (!vehiculo) return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] flex-col items-center justify-center gap-4"><p className="text-sm text-navy-400 font-body">Vehiculo no encontrado.</p><Link href="/vehiculos" className="inline-flex items-center gap-2 text-sm text-gold-600 hover:text-gold-700 font-body font-semibold"><ArrowLeft className="h-4 w-4" />Volver</Link></div>;
 
   const v = vehiculo as any;
-  const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api/v1', '');
+  const imgSrc = (path?: string | null) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return path.startsWith('/') ? path : `/${path}`;
+  };
   const dias = fechaInicio && fechaFin ? Math.max(1, Math.ceil((new Date(fechaFin).getTime() - new Date(fechaInicio).getTime()) / (1000 * 60 * 60 * 24))) : 0;
   const precioDia = applyMargin(60, 'vehiculos');
   const totalEstimado = dias * precioDia;
@@ -78,24 +82,24 @@ export default function VehiculoDetailPage() {
   const otherImgs = (v.imagenes || []).slice(1);
 
   return (
-    <div className="container-page py-10">
-      <Link href="/vehiculos" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <Link href="/vehiculos" className="inline-flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 font-body transition-colors group">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a vehículos
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {/* Main image */}
-          <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-gradient-to-br from-cream-200 to-navy-100">
             {mainImg ? (
-              <img src={`${API_URL}${mainImg}`} alt={`${v.marca} ${v.modelo}`} className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
+              <img src={imgSrc(mainImg)} alt={`${v.marca} ${v.modelo}`} className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
             ) : (
-              <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 to-muted"><Car className="h-24 w-24 text-primary/30" /></div>
+              <div className="flex h-full items-center justify-center"><Car className="h-24 w-24 text-navy-300" /></div>
             )}
           </div>
           {/* Gallery */}
           {otherImgs.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">{otherImgs.map((img: string, i: number) => <div key={i} className="aspect-video overflow-hidden rounded-xl border border-border/50"><img src={`${API_URL}${img}`} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-500" /></div>)}</div>
+            <div className="grid grid-cols-3 gap-2">{otherImgs.map((img: string, i: number) => <div key={i} className="relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br from-cream-200 to-navy-100"><img src={imgSrc(img)} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-500" /></div>)}</div>
           )}
 
           {/* Info */}

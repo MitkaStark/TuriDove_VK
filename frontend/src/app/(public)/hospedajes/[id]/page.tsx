@@ -18,7 +18,12 @@ import { applyMargin, getMarginPercent } from "@/lib/margins";
 import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:3001';
+// Las imágenes se sirven desde /uploads/* (proxied por next.config rewrite al backend)
+function imgSrc(path?: string | null): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return path.startsWith('/') ? path : `/${path}`;
+}
 
 export default function HospedajeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -98,14 +103,16 @@ export default function HospedajeDetailPage() {
   };
 
   if (isLoading) {
-    return <div className="container-page flex min-h-[50vh] items-center justify-center"><p className="text-muted-foreground">Cargando hotel...</p></div>;
+    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] items-center justify-center"><p className="text-sm text-navy-400 font-body">Cargando hotel...</p></div>;
   }
 
   if (!hospedaje) {
     return (
-      <div className="container-page flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Hotel no encontrado.</p>
-        <Link href="/hospedajes"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Volver a hoteles</Button></Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <p className="text-sm text-navy-400 font-body">Hotel no encontrado.</p>
+        <Link href="/hospedajes" className="inline-flex items-center gap-2 text-sm text-gold-600 hover:text-gold-700 font-body font-semibold">
+          <ArrowLeft className="h-4 w-4" />Volver a hoteles
+        </Link>
       </div>
     );
   }
@@ -134,28 +141,28 @@ export default function HospedajeDetailPage() {
   const totalEstimado = precioPorNoche * noches;
 
   return (
-    <div className="container-page py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Back */}
-      <Link href="/hospedajes" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group">
+      <Link href="/hospedajes" className="inline-flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 font-body transition-colors group">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a hoteles
       </Link>
 
       {/* Image Gallery */}
-      <div className="mt-6 grid gap-2 md:grid-cols-2 rounded-2xl overflow-hidden">
-        <div className="aspect-[4/3] bg-muted">
+      <div className="mt-6 grid gap-2 md:grid-cols-2 rounded-2xl overflow-hidden h-[260px] sm:h-[380px] md:h-[460px]">
+        <div className="relative h-full bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
           {mainImg ? (
-            <img src={`${API_URL}${mainImg}`} alt={h.nombre} className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
+            <img src={imgSrc(mainImg)} alt={h.nombre} className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
           ) : (
-            <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/20">
-              <Home className="h-16 w-16 text-primary/30" />
+            <div className="flex h-full items-center justify-center">
+              <Home className="h-16 w-16 text-navy-300" />
             </div>
           )}
         </div>
         {otherImgs.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 h-full">
             {otherImgs.slice(0, 4).map((img: string, i: number) => (
-              <div key={i} className="aspect-[4/3] bg-muted overflow-hidden">
-                <img src={`${API_URL}${img}`} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
+              <div key={i} className="relative h-full bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
+                <img src={imgSrc(img)} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             ))}
           </div>
@@ -214,7 +221,7 @@ export default function HospedajeDetailPage() {
                     <div key={hab.id} className="rounded-xl border border-border/60 overflow-hidden hover:shadow-lg transition-all duration-300 bg-card">
                       {img && (
                         <div className="aspect-[2.5/1] bg-muted overflow-hidden">
-                          <img src={img.startsWith('/') ? `${API_URL}${img}` : img} alt={hab.nombre} className="h-full w-full object-cover" />
+                          <img src={imgSrc(img)} alt={hab.nombre} className="h-full w-full object-cover" />
                         </div>
                       )}
                       <div className="p-4">
@@ -318,7 +325,7 @@ export default function HospedajeDetailPage() {
                 {habImgs.length > 0 && (
                   <div className="relative rounded-xl overflow-hidden aspect-[16/9] bg-muted">
                     <img
-                      src={habImgs[habImgIndex]?.startsWith('/') ? `${API_URL}${habImgs[habImgIndex]}` : habImgs[habImgIndex]}
+                      src={imgSrc(habImgs[habImgIndex])}
                       alt={habDetailData.nombre}
                       className="h-full w-full object-cover"
                     />

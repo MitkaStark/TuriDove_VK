@@ -66,8 +66,8 @@ export default function TransferDetailPage() {
     });
   };
 
-  if (isLoading) return <div className="container-page flex min-h-[50vh] items-center justify-center"><p className="text-muted-foreground">Cargando...</p></div>;
-  if (!transfer) return <div className="container-page flex min-h-[50vh] flex-col items-center justify-center gap-4"><p className="text-muted-foreground">Transfer no encontrado.</p><Link href="/transfers"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Volver</Button></Link></div>;
+  if (isLoading) return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] items-center justify-center"><p className="text-sm text-navy-400 font-body">Cargando...</p></div>;
+  if (!transfer) return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] flex-col items-center justify-center gap-4"><p className="text-sm text-navy-400 font-body">Transfer no encontrado.</p><Link href="/transfers" className="inline-flex items-center gap-2 text-sm text-gold-600 hover:text-gold-700 font-body font-semibold"><ArrowLeft className="h-4 w-4" />Volver</Link></div>;
 
   const t = transfer as any;
   const numPasajeros = parseInt(pasajeros) || 0;
@@ -75,8 +75,8 @@ export default function TransferDetailPage() {
   const totalEstimado = numPasajeros * precioPasajero;
 
   return (
-    <div className="container-page py-10">
-      <Link href="/transfers" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <Link href="/transfers" className="inline-flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 font-body transition-colors group">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a transfers
       </Link>
 
