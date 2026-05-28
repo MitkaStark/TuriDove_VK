@@ -80,23 +80,49 @@ export default function ActividadDetailPage() {
   const precioNino = applyMargin(25, 'actividades');
   const totalEstimado = (numAdultos * precioAdulto) + (numNinos * precioNino);
 
+  const imgSrc = (path?: string | null) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return path.startsWith('/') ? path : `/${path}`;
+  };
+  const mainImg = a.imagenPrincipal || a.imagenes?.[0];
+  const otherImgs = (a.imagenes || []).filter((img: string) => img !== mainImg);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <Link href="/actividades" className="inline-flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 font-body transition-colors group">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />Volver a actividades
       </Link>
 
+      {/* Image Gallery */}
+      {mainImg && (
+        <div className="mt-6 grid gap-2 md:grid-cols-2 rounded-2xl overflow-hidden h-[260px] sm:h-[380px] md:h-[460px]">
+          <div className="relative h-full bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
+            <img src={imgSrc(mainImg)} alt={a.nombre} className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
+          </div>
+          {otherImgs.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 h-full">
+              {otherImgs.slice(0, 4).map((img: string, i: number) => (
+                <div key={i} className="relative h-full bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
+                  <img src={imgSrc(img)} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mt-6 grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           {/* Header */}
           <div className="flex items-start gap-5">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10"><Icon className="h-8 w-8 text-primary" /></div>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gold-50"><Icon className="h-8 w-8 text-gold-500" /></div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight" style={{letterSpacing:'-0.03em'}}>{a.nombre}</h1>
+              <h1 className="text-3xl font-display font-bold text-navy-800 tracking-tight">{a.nombre}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center rounded-full border border-border px-3 py-0.5 text-xs font-semibold">{a.tipo}</span>
-                <span className="flex items-center gap-1 text-sm text-muted-foreground"><Clock className="h-3.5 w-3.5" />{a.duracionHoras} horas</span>
-                <span className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-3.5 w-3.5 text-primary" />{a.ubicacion}</span>
+                <span className="inline-flex items-center rounded-full bg-gold-50 text-gold-700 px-3 py-0.5 text-xs font-medium">{a.tipo}</span>
+                <span className="flex items-center gap-1 text-sm text-navy-400 font-body"><Clock className="h-3.5 w-3.5" />{a.duracionHoras} horas</span>
+                <span className="flex items-center gap-1 text-sm text-navy-400 font-body"><MapPin className="h-3.5 w-3.5 text-gold-500" />{a.ubicacion}</span>
               </div>
             </div>
           </div>
