@@ -65,7 +65,7 @@ export function DashboardLayout({
   const kicker = roleKickers[user?.role || ""] || "PANEL";
 
   return (
-    <div className="fixed inset-0 z-[100] flex bg-cream">
+    <div className="fixed inset-0 z-0 flex bg-cream">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
         <SidebarNav
