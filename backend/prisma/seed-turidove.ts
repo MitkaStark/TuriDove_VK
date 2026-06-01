@@ -210,13 +210,26 @@ async function main() {
   console.log('Habitaciones + Tarifas OK');
 
   // --- Actividades (1 per destino) + Tarifas ---
+  // UUIDs deterministas de las 6 categorías sembradas en la migración actividades_v2:
+  const CAT_AVENTURA = '00000000-0000-0000-0000-000000000001';
+  const CAT_CULTURAL = '00000000-0000-0000-0000-000000000002';
+  const CAT_GASTRONOMICA = '00000000-0000-0000-0000-000000000003';
+  const CAT_NATURALEZA = '00000000-0000-0000-0000-000000000004';
+  const CAT_EDUCATIVA = '00000000-0000-0000-0000-000000000005';
+  const CAT_DEPORTIVA = '00000000-0000-0000-0000-000000000006';
+
+  function slugifyActividad(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
   const actividadesSeed = [
-    { nombre: 'Tour Torre Eiffel', tipo: 'CULTURAL' as const, ubicacion: 'Paris', provincia: 'Paris', distrito: 'Francia', precio: 80, featured: true, imagen: '/uploads/paris-activity-1.jpg', proveedorId: parisProv.id },
-    { nombre: 'Coliseo y Foro', tipo: 'CULTURAL' as const, ubicacion: 'Roma', provincia: 'Roma', distrito: 'Italia', precio: 90, featured: true, imagen: '/uploads/roma-activity-1.jpg', proveedorId: parisProv.id },
-    { nombre: 'Templo Sensoji', tipo: 'CULTURAL' as const, ubicacion: 'Tokio', provincia: 'Tokio', distrito: 'Japon', precio: 70, featured: true, imagen: '/uploads/tokio-activity-1.jpg', proveedorId: asiaProv.id },
-    { nombre: 'Estatua de la Libertad', tipo: 'CULTURAL' as const, ubicacion: 'Nueva York', provincia: 'Nueva York', distrito: 'EE.UU.', precio: 95, featured: false, imagen: '/uploads/newyork-activity-1.jpg', proveedorId: admin.id },
-    { nombre: 'Atardecer en Oia', tipo: 'NATURALEZA' as const, ubicacion: 'Santorini', provincia: 'Santorini', distrito: 'Grecia', precio: 60, featured: false, imagen: '/uploads/santorini-activity-1.jpg', proveedorId: boutiqueAg.id },
-    { nombre: 'Medina y Zoco', tipo: 'CULTURAL' as const, ubicacion: 'Marrakech', provincia: 'Marrakech', distrito: 'Marruecos', precio: 55, featured: false, imagen: '/uploads/marrakech-activity-1.jpg', proveedorId: boutiqueAg.id },
+    { nombre: 'Tour Torre Eiffel', categoriaId: CAT_CULTURAL, ubicacion: 'Paris', provincia: 'Paris', distrito: 'Francia', precio: 80, featured: true, imagen: '/uploads/paris-activity-1.jpg', proveedorId: parisProv.id },
+    { nombre: 'Coliseo y Foro', categoriaId: CAT_CULTURAL, ubicacion: 'Roma', provincia: 'Roma', distrito: 'Italia', precio: 90, featured: true, imagen: '/uploads/roma-activity-1.jpg', proveedorId: parisProv.id },
+    { nombre: 'Templo Sensoji', categoriaId: CAT_CULTURAL, ubicacion: 'Tokio', provincia: 'Tokio', distrito: 'Japon', precio: 70, featured: true, imagen: '/uploads/tokio-activity-1.jpg', proveedorId: asiaProv.id },
+    { nombre: 'Estatua de la Libertad', categoriaId: CAT_CULTURAL, ubicacion: 'Nueva York', provincia: 'Nueva York', distrito: 'EE.UU.', precio: 95, featured: false, imagen: '/uploads/newyork-activity-1.jpg', proveedorId: admin.id },
+    { nombre: 'Atardecer en Oia', categoriaId: CAT_NATURALEZA, ubicacion: 'Santorini', provincia: 'Santorini', distrito: 'Grecia', precio: 60, featured: false, imagen: '/uploads/santorini-activity-1.jpg', proveedorId: boutiqueAg.id },
+    { nombre: 'Medina y Zoco', categoriaId: CAT_CULTURAL, ubicacion: 'Marrakech', provincia: 'Marrakech', distrito: 'Marruecos', precio: 55, featured: false, imagen: '/uploads/marrakech-activity-1.jpg', proveedorId: boutiqueAg.id },
   ];
 
   const actividadesCreated: any[] = [];
@@ -226,22 +239,27 @@ async function main() {
     if (existing) {
       act = existing;
     } else {
+      const baseSlug = slugifyActividad(`${a.nombre} ${a.provincia}`);
+      // Sufijo aleatorio corto para garantizar unicidad incluso en reseed
+      const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
       act = await prisma.actividad.create({
         data: {
           nombre: a.nombre,
+          slug,
           descripcion: `${a.nombre} en ${a.ubicacion}. Experiencia inolvidable.`,
-          tipo: a.tipo,
+          categoriaId: a.categoriaId,
           duracionHoras: 3,
           ubicacion: a.ubicacion,
           provincia: a.provincia,
           distrito: a.distrito,
+          imagenPrincipal: a.imagen,
           imagenes: [a.imagen],
           incluye: ['Guia profesional', 'Entrada'],
           noIncluye: ['Comidas', 'Propinas'],
           requisitos: [],
           edadMinima: 0,
           capacidadMaxima: 20,
-          activo: true,
+          estado: 'ACTIVE',
           proveedorId: a.proveedorId,
           isFeatured: a.featured,
         },
