@@ -4,27 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { Mountain, Sun, TreePine, Users, Waves, GraduationCap, Search, Clock, MapPin, ArrowRight, Activity } from "lucide-react";
+import { Mountain, Search, Clock, MapPin, ArrowRight, Activity } from "lucide-react";
 import { actividadesService } from "@/services/actividades.service";
-
-const tipoIcons: Record<string, any> = {
-  AVENTURA: Mountain, GASTRONOMICA: Sun, NATURALEZA: TreePine, CULTURAL: Users, DEPORTIVA: Waves, EDUCATIVA: GraduationCap,
-};
-
-const tipos = ["Todas", "AVENTURA", "GASTRONOMICA", "NATURALEZA", "CULTURAL", "DEPORTIVA", "EDUCATIVA"];
+import { categoriasActividadService } from "@/services/categorias-actividad.service";
 
 export default function ActividadesPage() {
   const [search, setSearch] = useState("");
-  const [tipo, setTipo] = useState("Todas");
+  const [categoriaId, setCategoriaId] = useState<string | undefined>(undefined);
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ['public', 'categorias-actividad'],
+    queryFn: () => categoriasActividadService.getAll({ soloActivas: true }),
+  });
 
   const { data } = useQuery({
-    queryKey: ["public", "actividades", search],
-    queryFn: () => actividadesService.getAll({ search: search || undefined, limit: 100 }),
+    queryKey: ["public", "actividades", search, categoriaId],
+    queryFn: () => actividadesService.getAll({ search: search || undefined, categoriaId, limit: 100 }),
   });
 
   const items = (data?.data || data || []) as any[];
   const actividades = Array.isArray(items)
-    ? items.filter((a: any) => a.activo && (tipo === "Todas" || a.tipo === tipo))
+    ? items.filter((a: any) => a.activo)
     : [];
 
   return (
@@ -52,17 +52,21 @@ export default function ActividadesPage() {
         </div>
       </div>
 
-      {/* Filtros tipos */}
+      {/* Filtros categorias */}
       <div className="flex flex-wrap justify-center gap-2 mb-10 sm:mb-12">
-        {tipos.map((t) => (
+        <button
+          onClick={() => setCategoriaId(undefined)}
+          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-body font-medium transition-colors ${!categoriaId ? 'bg-navy-600 text-white' : 'bg-navy-50 text-navy-500 hover:bg-navy-100'}`}
+        >
+          Todas
+        </button>
+        {categorias.map((c) => (
           <button
-            key={t}
-            onClick={() => setTipo(t)}
-            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-body font-medium transition-colors ${
-              tipo === t ? "bg-navy-600 text-white" : "bg-navy-50 text-navy-500 hover:bg-navy-100"
-            }`}
+            key={c.id}
+            onClick={() => setCategoriaId(c.id)}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-body font-medium transition-colors ${categoriaId === c.id ? 'bg-navy-600 text-white' : 'bg-navy-50 text-navy-500 hover:bg-navy-100'}`}
           >
-            {t === "Todas" ? t : t.charAt(0) + t.slice(1).toLowerCase()}
+            {c.nombre}
           </button>
         ))}
       </div>
@@ -70,12 +74,11 @@ export default function ActividadesPage() {
       {/* Grid */}
       <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {actividades.map((a: any) => {
-          const Icon = tipoIcons[a.tipo] || Mountain;
           const img = a.imagenPrincipal || a.imagenes?.[0];
           return (
             <Link
               key={a.id}
-              href={`/actividades/${a.id}`}
+              href={`/actividades/${a.slug ?? a.id}`}
               className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300"
             >
               <div className="relative aspect-[4/3] bg-gradient-to-br from-cream-200 to-navy-100 overflow-hidden">
@@ -89,15 +92,16 @@ export default function ActividadesPage() {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <Icon className="h-10 w-10 text-navy-300" />
+                    <Mountain className="h-10 w-10 text-navy-300" />
                   </div>
                 )}
-                <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium text-navy-700 shadow-sm">
-                    <Icon className="h-3 w-3" />
-                    {a.tipo.charAt(0) + a.tipo.slice(1).toLowerCase()}
-                  </span>
-                </div>
+                {a.categoria?.nombre && (
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gold-50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium text-gold-700 shadow-sm">
+                      {a.categoria.nombre}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="p-4 sm:p-5">
