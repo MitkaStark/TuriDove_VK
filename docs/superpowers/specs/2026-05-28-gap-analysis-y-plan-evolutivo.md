@@ -707,7 +707,7 @@ Por dependencias técnicas y valor de negocio:
 
 | Fase | Nombre | Esfuerzo (días-dev) | Bloquea a | Valor |
 |---|---|---|---|---|
-| A | Endurecimiento Actividades | 4-5 | I (Destinos) | Alto — foco del usuario |
+| A | ✅ Endurecimiento Actividades | 4-5 | I (Destinos) | Alto — foco del usuario |
 | D | Endurecimiento Auth | 4-5 | E, B (verify email para reseñar) | Alto — seguridad |
 | E | Operación reservas (TTL + emails) | 3-4 | F | Alto — confiabilidad |
 | B | Reviews | 4-5 | C | Alto — confianza |
