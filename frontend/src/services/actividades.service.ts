@@ -4,19 +4,33 @@ import type {
   TarifaActividad,
   PaqueteActividad,
   CalendarioActividad,
-  PaginatedResponse,
   QueryParams,
 } from '@/types';
 
+interface ActividadQueryParams {
+  page?: number;
+  limit?: number;
+  categoriaId?: string;
+  provincia?: string;
+  search?: string;
+  isFeatured?: boolean;
+  estado?: string;
+}
+
 export const actividadesService = {
-  async getAll(params?: QueryParams): Promise<PaginatedResponse<Actividad>> {
+  async getAll(params: ActividadQueryParams = {}) {
     const { data } = await api.get('/actividades', { params });
-    return data;
+    return data as { data: Actividad[]; meta: { page: number; limit: number; total: number; totalPages: number } };
   },
 
-  async getById(id: string): Promise<Actividad> {
+  async getById(id: string) {
     const { data } = await api.get(`/actividades/${id}`);
-    return data;
+    return data as Actividad;
+  },
+
+  async getBySlug(slug: string) {
+    const { data } = await api.get(`/actividades/slug/${slug}`);
+    return data as Actividad;
   },
 
   async getMine(): Promise<Actividad[]> {
@@ -24,16 +38,21 @@ export const actividadesService = {
     return data;
   },
 
-  async create(payload: Partial<Actividad>): Promise<Actividad> {
+  async create(payload: Partial<Actividad>) {
     const { data } = await api.post('/actividades', payload);
-    return data;
+    return data as Actividad;
   },
 
-  async update(id: string, payload: Partial<Actividad>): Promise<Actividad> {
+  async update(id: string, payload: Partial<Actividad>) {
     const { data } = await api.patch(`/actividades/${id}`, payload);
-    return data;
+    return data as Actividad;
   },
 
+  async remove(id: string) {
+    await api.delete(`/actividades/${id}`);
+  },
+
+  // Keep backward-compat alias
   async delete(id: string): Promise<void> {
     await api.delete(`/actividades/${id}`);
   },
@@ -72,7 +91,10 @@ export const actividadesService = {
   },
 };
 
+// Helper for the home: actividades destacadas
 export async function getFeaturedActividades(limit = 3) {
-  const { data } = await api.get('/actividades', { params: { featured: 'true', limit } });
+  const { data } = await api.get('/actividades', {
+    params: { featured: 'true', limit, estado: 'ACTIVE' },
+  });
   return (data?.data?.data ?? data?.data ?? data?.items ?? data ?? []) as any[];
 }
