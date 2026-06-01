@@ -34,7 +34,7 @@ export class CreateActividadDto {
   descripcion: string;
 
   @ApiProperty({ example: '00000000-0000-0000-0000-000000000004', description: 'UUID de la categoría' })
-  @IsUUID('all')
+  @IsUUID('loose')
   categoriaId: string;
 
   @ApiProperty({ example: 3, description: 'Duración en horas (0.5 - 168)' })
