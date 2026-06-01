@@ -26,8 +26,8 @@ const schema = z.object({
   ubicacion: z.string().min(2, "Requerido"),
   provincia: z.string().min(2, "Requerido"),
   distrito: z.string().min(2, "Requerido"),
-  duracionHoras: z.coerce.number().min(0.5).max(72),
-  capacidadMaxima: z.coerce.number().min(1).max(500).optional(),
+  duracionHoras: z.coerce.number().min(0.5).max(168),
+  capacidadMaxima: z.coerce.number().min(1).max(1000),
   edadMinima: z.coerce.number().min(0).max(100).optional(),
 });
 type FormData = z.infer<typeof schema>;
@@ -64,8 +64,8 @@ export default function AdminActividadesPage() {
     onError: (e: any) => toast.error(e?.response?.data?.message || "Error al actualizar"),
   });
   const toggleMut = useMutation({
-    mutationFn: ({ id, activo }: { id: string; activo: boolean }) => actividadesService.update(id, { activo } as any),
-    onSuccess: (_, v) => { toast.success(v.activo ? "Activada" : "Desactivada"); qc.invalidateQueries({ queryKey: ["admin", "actividades"] }); },
+    mutationFn: ({ id, estado }: { id: string; estado: 'ACTIVE' | 'INACTIVE' }) => actividadesService.update(id, { estado } as any),
+    onSuccess: (_, v) => { toast.success(v.estado === 'ACTIVE' ? "Activada" : "Desactivada"); qc.invalidateQueries({ queryKey: ["admin", "actividades"] }); },
     onError: () => toast.error("Error al cambiar estado"),
   });
   const deleteMut = useMutation({
@@ -96,17 +96,19 @@ export default function AdminActividadesPage() {
     }},
     { key: "provincia", header: "Provincia" },
     { key: "duracionHoras", header: "Duracion", render: (i) => `${i.duracionHoras}h` },
-    { key: "activo", header: "Activo", render: (i) => <Badge variant={i.activo ? "default" : "secondary"}>{i.activo ? "Activo" : "Inactivo"}</Badge> },
     {
       key: "acciones", header: "Acciones",
-      render: (i) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" title="Ver" onClick={() => { setSel(i); setDetailOpen(true); }}><Eye className="h-4 w-4 text-blue-600" /></Button>
-          <Button variant="ghost" size="icon" title="Editar" onClick={() => openEdit(i)}><Pencil className="h-4 w-4 text-amber-600" /></Button>
-          <Button variant="ghost" size="icon" title={i.activo ? "Desactivar" : "Activar"} onClick={() => toggleMut.mutate({ id: i.id, activo: !i.activo })}><Power className={`h-4 w-4 ${i.activo ? "text-red-500" : "text-green-600"}`} /></Button>
-          <Button variant="ghost" size="icon" title="Eliminar" onClick={() => { setSel(i); setDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-red-700" /></Button>
-        </div>
-      ),
+      render: (i) => {
+        const isActive = i.estado === 'ACTIVE';
+        return (
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" title="Ver" onClick={() => { setSel(i); setDetailOpen(true); }}><Eye className="h-4 w-4 text-blue-600" /></Button>
+            <Button variant="ghost" size="icon" title="Editar" onClick={() => openEdit(i)}><Pencil className="h-4 w-4 text-amber-600" /></Button>
+            <Button variant="ghost" size="icon" title={isActive ? "Desactivar" : "Activar"} onClick={() => toggleMut.mutate({ id: i.id, estado: isActive ? 'INACTIVE' : 'ACTIVE' })}><Power className={`h-4 w-4 ${isActive ? "text-red-500" : "text-green-600"}`} /></Button>
+            <Button variant="ghost" size="icon" title="Eliminar" onClick={() => { setSel(i); setDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-red-700" /></Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -168,13 +170,20 @@ export default function AdminActividadesPage() {
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent><DialogHeader><DialogTitle>Nueva Actividad</DialogTitle><DialogDescription>Completa los datos.</DialogDescription></DialogHeader>
-          <form onSubmit={cSubmit((d) => createMut.mutate({ ...d, categoriaId, estado }))}>{formFields(cReg, cErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button><Button type="submit" disabled={createMut.isPending}>{createMut.isPending ? "Creando..." : "Crear"}</Button></DialogFooter></form>
+          <form onSubmit={cSubmit((d) => {
+            if (!categoriaId) { toast.error("Selecciona una categoría"); return; }
+            createMut.mutate({ ...d, categoriaId, estado });
+          })}>{formFields(cReg, cErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button><Button type="submit" disabled={createMut.isPending}>{createMut.isPending ? "Creando..." : "Crear"}</Button></DialogFooter></form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Editar Actividad</DialogTitle><DialogDescription>Modifica los datos.</DialogDescription></DialogHeader>
-          <form onSubmit={eSubmit((d) => sel && editMut.mutate({ id: sel.id, p: { ...d, categoriaId, estado } }))}>{formFields(eReg, eErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button><Button type="submit" disabled={editMut.isPending}>{editMut.isPending ? "Guardando..." : "Guardar"}</Button></DialogFooter></form>
+          <form onSubmit={eSubmit((d) => {
+            if (!sel) return;
+            if (!categoriaId) { toast.error("Selecciona una categoría"); return; }
+            editMut.mutate({ id: sel.id, p: { ...d, categoriaId, estado } });
+          })}>{formFields(eReg, eErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button><Button type="submit" disabled={editMut.isPending}>{editMut.isPending ? "Guardando..." : "Guardar"}</Button></DialogFooter></form>
           {sel?.id && (
             <div className="mt-6 pt-6 border-t border-navy-100/50">
               <ItinerarioEditor
@@ -198,7 +207,6 @@ export default function AdminActividadesPage() {
             <div><p className="text-sm font-medium text-muted-foreground">Ubicacion</p><p className="text-sm">{sel.ubicacion}</p></div>
             <div><p className="text-sm font-medium text-muted-foreground">Duracion</p><p className="text-sm">{sel.duracionHoras}h</p></div>
             <div><p className="text-sm font-medium text-muted-foreground">Capacidad</p><p className="text-sm">{sel.capacidadMaxima} personas</p></div>
-            <div><p className="text-sm font-medium text-muted-foreground">Activo</p><Badge variant={sel.activo ? "default" : "secondary"}>{sel.activo ? "Activo" : "Inactivo"}</Badge></div>
             <div className="col-span-2"><p className="text-sm font-medium text-muted-foreground">Descripción</p><p className="text-sm">{sel.descripcion}</p></div>
           </div><DialogFooter><Button variant="outline" onClick={() => setDetailOpen(false)}>Cerrar</Button><Button onClick={() => { setDetailOpen(false); openEdit(sel); }}><Pencil className="mr-2 h-4 w-4" />Editar</Button></DialogFooter></div>)}
         </DialogContent>
