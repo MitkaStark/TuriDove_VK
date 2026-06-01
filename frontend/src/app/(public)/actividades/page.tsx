@@ -23,9 +23,8 @@ export default function ActividadesPage() {
   });
 
   const items = (data?.data || data || []) as any[];
-  const actividades = Array.isArray(items)
-    ? items.filter((a: any) => a.activo)
-    : [];
+  // Backend ya filtra por estado=ACTIVE para listados públicos (default del service)
+  const actividades = Array.isArray(items) ? items : [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
