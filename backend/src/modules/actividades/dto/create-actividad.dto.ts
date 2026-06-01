@@ -1,26 +1,23 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
-  IsNotEmpty,
-  IsEnum,
   IsNumber,
-  IsOptional,
-  IsArray,
   IsInt,
+  IsArray,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+  IsUUID,
+  IsNotEmpty,
   Min,
   Max,
   MaxLength,
 } from 'class-validator';
 
-export enum TipoActividad {
-  TOUR = 'TOUR',
-  AVENTURA = 'AVENTURA',
-  CULTURAL = 'CULTURAL',
-  GASTRONOMICA = 'GASTRONOMICA',
-  NATURALEZA = 'NATURALEZA',
-  DEPORTIVA = 'DEPORTIVA',
-  EDUCATIVA = 'EDUCATIVA',
-  OTRO = 'OTRO',
+export enum EstadoActividad {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
 }
 
 export class CreateActividadDto {
@@ -36,14 +33,14 @@ export class CreateActividadDto {
   @MaxLength(5000)
   descripcion: string;
 
-  @ApiProperty({ enum: TipoActividad, example: TipoActividad.NATURALEZA })
-  @IsEnum(TipoActividad)
-  tipo: TipoActividad;
+  @ApiProperty({ example: '00000000-0000-0000-0000-000000000004', description: 'UUID de la categoría' })
+  @IsUUID()
+  categoriaId: string;
 
-  @ApiProperty({ example: 3, description: 'Duración en horas' })
+  @ApiProperty({ example: 3, description: 'Duración en horas (0.5 - 168)' })
   @IsNumber()
   @Min(0.5)
-  @Max(72)
+  @Max(168)
   duracionHoras: number;
 
   @ApiProperty({ example: 'Finca La Aurora, Boquete' })
@@ -64,41 +61,56 @@ export class CreateActividadDto {
   @MaxLength(100)
   distrito: string;
 
-  @ApiPropertyOptional({ example: ['https://storage.example.com/img1.jpg'] })
+  @ApiPropertyOptional({ example: '/uploads/actividad-portada.jpg' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  imagenPrincipal?: string;
+
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   imagenes?: string[];
 
-  @ApiPropertyOptional({ example: ['Guía bilingüe', 'Degustación de café'] })
+  @ApiPropertyOptional({ type: [String], example: ['Guía profesional', 'Equipo'] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   incluye?: string[];
 
-  @ApiPropertyOptional({ example: ['Transporte al sitio', 'Almuerzo'] })
+  @ApiPropertyOptional({ type: [String], example: ['Comidas', 'Propinas'] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   noIncluye?: string[];
 
-  @ApiPropertyOptional({ example: ['Ropa cómoda', 'Protector solar'] })
+  @ApiPropertyOptional({ type: [String], example: ['Calzado cómodo', 'Edad mínima 12'] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   requisitos?: string[];
 
-  @ApiPropertyOptional({ example: 8 })
+  @ApiPropertyOptional({ example: 0, description: 'Edad mínima del participante' })
   @IsOptional()
   @IsInt()
   @Min(0)
-  @Max(100)
+  @Max(120)
   edadMinima?: number;
 
-  @ApiPropertyOptional({ example: 20 })
-  @IsOptional()
+  @ApiProperty({ example: 20, description: 'Capacidad máxima por sesión' })
   @IsInt()
   @Min(1)
-  @Max(500)
-  capacidadMaxima?: number;
+  @Max(1000)
+  capacidadMaxima: number;
+
+  @ApiPropertyOptional({ enum: EstadoActividad, default: EstadoActividad.DRAFT })
+  @IsOptional()
+  @IsEnum(EstadoActividad)
+  estado?: EstadoActividad;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
 }
