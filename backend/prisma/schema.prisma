@@ -47,15 +47,6 @@ enum TipoHabitacion {
   DORMITORIO
 }
 
-enum TipoActividad {
-  AVENTURA
-  CULTURAL
-  GASTRONOMICA
-  NATURALEZA
-  EDUCATIVA
-  DEPORTIVA
-}
-
 enum TipoVehiculo {
   SEDAN
   SUV
@@ -76,6 +67,12 @@ enum Temporada {
   ALTA
   MEDIA
   BAJA
+}
+
+enum EstadoActividad {
+  DRAFT
+  ACTIVE
+  INACTIVE
 }
 
 enum MetodoPago {
@@ -103,47 +100,47 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hospedajes          Hospedaje[]
-  actividades         Actividad[]
-  transfers           Transfer[]
-  vehiculos           Vehiculo[]
-  reservas            Reserva[]
-  pagos               Pago[]
-  auditLogs           AuditLog[]
-  paquetes            PaqueteActividad[]
-  comisiones          Comision[]
-  paquetesProveedor   Paquete[]          @relation("PaquetesDeProveedor")
+  hospedajes        Hospedaje[]
+  actividades       Actividad[]
+  transfers         Transfer[]
+  vehiculos         Vehiculo[]
+  reservas          Reserva[]
+  pagos             Pago[]
+  auditLogs         AuditLog[]
+  paquetes          PaqueteActividad[]
+  comisiones        Comision[]
+  paquetesProveedor Paquete[]          @relation("PaquetesDeProveedor")
 
   @@map("users")
 }
 
 model Hospedaje {
-  id             String   @id @default(uuid())
-  nombre         String
-  descripcion    String   @default("")
-  direccion      String   @default("")
-  provincia      String   @default("")
-  distrito       String   @default("")
-  corregimiento  String   @default("")
-  latitud        Float?
-  longitud       Float?
-  imagenes         String[]
-  imagenPrincipal  String?   @map("imagen_principal")
-  amenidades       String[]
-  politicas      String?
-  checkIn        String   @default("14:00") @map("check_in")
-  checkOut       String   @default("12:00") @map("check_out")
-  activo         Boolean  @default(true)
-  proveedorId    String   @map("proveedor_id")
-  isFeatured     Boolean  @default(false) @map("is_featured")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  nombre          String
+  descripcion     String   @default("")
+  direccion       String   @default("")
+  provincia       String   @default("")
+  distrito        String   @default("")
+  corregimiento   String   @default("")
+  latitud         Float?
+  longitud        Float?
+  imagenes        String[]
+  imagenPrincipal String?  @map("imagen_principal")
+  amenidades      String[]
+  politicas       String?
+  checkIn         String   @default("14:00") @map("check_in")
+  checkOut        String   @default("12:00") @map("check_out")
+  activo          Boolean  @default(true)
+  proveedorId     String   @map("proveedor_id")
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  proveedor          User                @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
-  habitaciones       Habitacion[]
-  tarifas            TarifaHospedaje[]
-  reservaHospedajes  ReservaHospedaje[]
-  paquetes           Paquete[]
+  proveedor         User               @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  habitaciones      Habitacion[]
+  tarifas           TarifaHospedaje[]
+  reservaHospedajes ReservaHospedaje[]
+  paquetes          Paquete[]
 
   @@index([proveedorId])
   @@index([provincia])
@@ -151,17 +148,17 @@ model Hospedaje {
 }
 
 model Habitacion {
-  id           String          @id @default(uuid())
-  nombre       String
-  tipo         TipoHabitacion
-  capacidad    Int
-  descripcion  String?
-  amenidades   String[]
-  imagenes     String[]
-  activo       Boolean         @default(true)
-  hospedajeId  String          @map("hospedaje_id")
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
+  id          String         @id @default(uuid())
+  nombre      String
+  tipo        TipoHabitacion
+  capacidad   Int
+  descripcion String?
+  amenidades  String[]
+  imagenes    String[]
+  activo      Boolean        @default(true)
+  hospedajeId String         @map("hospedaje_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
 
   hospedaje        Hospedaje                 @relation(fields: [hospedajeId], references: [id], onDelete: Cascade)
   disponibilidades DisponibilidadHospedaje[]
@@ -211,54 +208,93 @@ model DisponibilidadHospedaje {
   @@map("disponibilidad_hospedaje")
 }
 
-model Actividad {
-  id               String        @id @default(uuid())
-  nombre           String
-  descripcion      String
-  tipo             TipoActividad
-  duracionHoras    Float         @map("duracion_horas")
-  ubicacion        String
-  provincia        String
-  distrito         String
-  imagenes         String[]
-  incluye          String[]
-  noIncluye        String[]      @map("no_incluye")
-  requisitos       String[]
-  edadMinima       Int           @default(0) @map("edad_minima")
-  capacidadMaxima  Int           @map("capacidad_maxima")
-  activo           Boolean       @default(true)
-  proveedorId      String        @map("proveedor_id")
-  isFeatured       Boolean       @default(false) @map("is_featured")
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime      @updatedAt @map("updated_at")
+model CategoriaActividad {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  slug        String   @unique
+  icono       String?
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  proveedor          User                 @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  actividades Actividad[]
+
+  @@map("categorias_actividad")
+}
+
+model ItinerarioActividad {
+  id              String   @id @default(uuid())
+  actividadId     String   @map("actividad_id")
+  dia             Int
+  titulo          String
+  descripcion     String
+  lat             Float?
+  lng             Float?
+  nombreUbicacion String?  @map("nombre_ubicacion")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@unique([actividadId, dia])
+  @@index([actividadId])
+  @@map("itinerario_actividad")
+}
+
+model Actividad {
+  id              String          @id @default(uuid())
+  nombre          String
+  slug            String          @unique
+  descripcion     String
+  categoriaId     String          @map("categoria_id")
+  duracionHoras   Float           @map("duracion_horas")
+  ubicacion       String
+  provincia       String
+  distrito        String
+  imagenPrincipal String?         @map("imagen_principal")
+  imagenes        String[]
+  incluye         String[]
+  noIncluye       String[]        @map("no_incluye")
+  requisitos      String[]
+  edadMinima      Int             @default(0) @map("edad_minima")
+  capacidadMaxima Int             @map("capacidad_maxima")
+  estado          EstadoActividad @default(DRAFT)
+  proveedorId     String          @map("proveedor_id")
+  isFeatured      Boolean         @default(false) @map("is_featured")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  categoria          CategoriaActividad    @relation(fields: [categoriaId], references: [id])
+  proveedor          User                  @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
   tarifas            TarifaActividad[]
   paquetes           PaqueteActividad[]
   calendarios        CalendarioActividad[]
+  itinerario         ItinerarioActividad[]
   reservaActividades ReservaActividad[]
-  paquetesTuridove   Paquete[]          @relation("PaquetesTuridoveActividad")
+  paquetesTuridove   Paquete[]             @relation("PaquetesTuridoveActividad")
 
   @@index([proveedorId])
   @@index([provincia])
-  @@index([tipo])
+  @@index([categoriaId])
+  @@index([estado])
+  @@index([slug])
   @@map("actividades")
 }
 
 model TarifaActividad {
-  id              String    @id @default(uuid())
-  actividadId     String    @map("actividad_id")
-  temporada       Temporada
-  precioAdulto    Decimal   @map("precio_adulto")
-  precioNino      Decimal   @map("precio_nino")
-  precioGrupo     Decimal?  @map("precio_grupo")
-  minimoPersonas  Int       @default(1) @map("minimo_personas")
-  moneda          String    @default("USD")
-  fechaInicio     DateTime  @map("fecha_inicio")
-  fechaFin        DateTime  @map("fecha_fin")
-  activo          Boolean   @default(true)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(uuid())
+  actividadId    String    @map("actividad_id")
+  temporada      Temporada
+  precioAdulto   Decimal   @map("precio_adulto")
+  precioNino     Decimal   @map("precio_nino")
+  precioGrupo    Decimal?  @map("precio_grupo")
+  minimoPersonas Int       @default(1) @map("minimo_personas")
+  moneda         String    @default("USD")
+  fechaInicio    DateTime  @map("fecha_inicio")
+  fechaFin       DateTime  @map("fecha_fin")
+  activo         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
 
@@ -284,15 +320,15 @@ model PaqueteActividad {
 }
 
 model CalendarioActividad {
-  id                String   @id @default(uuid())
-  actividadId       String   @map("actividad_id")
-  fecha             DateTime
-  horaInicio        String   @map("hora_inicio")
-  horaFin           String   @map("hora_fin")
-  cuposDisponibles  Int      @map("cupos_disponibles")
-  activo            Boolean  @default(true)
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  actividadId      String   @map("actividad_id")
+  fecha            DateTime
+  horaInicio       String   @map("hora_inicio")
+  horaFin          String   @map("hora_fin")
+  cuposDisponibles Int      @map("cupos_disponibles")
+  activo           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
 
@@ -302,24 +338,24 @@ model CalendarioActividad {
 }
 
 model Transfer {
-  id               String        @id @default(uuid())
+  id               String       @id @default(uuid())
   nombre           String
   tipo             TipoTransfer
   origen           String
   destino          String
   descripcion      String?
-  distanciaKm      Float?        @map("distancia_km")
-  duracionEstimada String?       @map("duracion_estimada")
-  activo           Boolean       @default(true)
-  proveedorId      String        @map("proveedor_id")
-  isFeatured       Boolean       @default(false) @map("is_featured")
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime      @updatedAt @map("updated_at")
+  distanciaKm      Float?       @map("distancia_km")
+  duracionEstimada String?      @map("duracion_estimada")
+  activo           Boolean      @default(true)
+  proveedorId      String       @map("proveedor_id")
+  isFeatured       Boolean      @default(false) @map("is_featured")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  proveedor          User               @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
-  tarifas            TarifaTransfer[]
-  vehiculoTransfers  VehiculoTransfer[]
-  reservaTransfers   ReservaTransfer[]
+  proveedor         User               @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  tarifas           TarifaTransfer[]
+  vehiculoTransfers VehiculoTransfer[]
+  reservaTransfers  ReservaTransfer[]
 
   @@index([proveedorId])
   @@index([tipo])
@@ -361,28 +397,28 @@ model VehiculoTransfer {
 }
 
 model Vehiculo {
-  id                   String       @id @default(uuid())
-  marca                String
-  modelo               String
-  anio                 Int
-  placa                String       @unique
-  tipo                 TipoVehiculo
-  capacidadPasajeros   Int          @map("capacidad_pasajeros")
-  caracteristicas      String[]
-  imagenes             String[]
-  seguroIncluido       Boolean      @default(false) @map("seguro_incluido")
-  activo               Boolean      @default(true)
-  proveedorId          String       @map("proveedor_id")
-  isFeatured           Boolean      @default(false) @map("is_featured")
-  createdAt            DateTime     @default(now()) @map("created_at")
-  updatedAt            DateTime     @updatedAt @map("updated_at")
+  id                 String       @id @default(uuid())
+  marca              String
+  modelo             String
+  anio               Int
+  placa              String       @unique
+  tipo               TipoVehiculo
+  capacidadPasajeros Int          @map("capacidad_pasajeros")
+  caracteristicas    String[]
+  imagenes           String[]
+  seguroIncluido     Boolean      @default(false) @map("seguro_incluido")
+  activo             Boolean      @default(true)
+  proveedorId        String       @map("proveedor_id")
+  isFeatured         Boolean      @default(false) @map("is_featured")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
-  proveedor            User                    @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
-  tarifas              TarifaVehiculo[]
-  vehiculoTransfers    VehiculoTransfer[]
-  disponibilidades     DisponibilidadVehiculo[]
-  reservaVehiculos     ReservaVehiculo[]
-  paquetes             Paquete[]
+  proveedor         User                     @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  tarifas           TarifaVehiculo[]
+  vehiculoTransfers VehiculoTransfer[]
+  disponibilidades  DisponibilidadVehiculo[]
+  reservaVehiculos  ReservaVehiculo[]
+  paquetes          Paquete[]
 
   @@index([proveedorId])
   @@index([tipo])
@@ -525,21 +561,21 @@ model ReservaVehiculo {
 }
 
 model Pago {
-  id              String     @id @default(uuid())
-  reservaId       String     @map("reserva_id")
-  monto           Decimal
-  moneda          String     @default("USD")
-  metodo          MetodoPago
-  estado          EstadoPago @default(PENDIENTE)
-  referencia      String?
+  id                String     @id @default(uuid())
+  reservaId         String     @map("reserva_id")
+  monto             Decimal
+  moneda            String     @default("USD")
+  metodo            MetodoPago
+  estado            EstadoPago @default(PENDIENTE)
+  referencia        String?
   stripePaymentId   String?    @map("stripe_payment_id")
   stripeSessionId   String?    @unique @map("stripe_session_id")
   stripeCheckoutUrl String?    @map("stripe_checkout_url")
   stripeEventLog    Json?      @map("stripe_event_log")
   detalles          Json?
-  userId          String     @map("user_id")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  userId            String     @map("user_id")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
 
   reserva Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -583,7 +619,7 @@ model Paquete {
   vehiculoId          String?  @map("vehiculo_id")
   diasDuracion        Int      @map("dias_duracion")
   noches              Int
-  descuentoPorcentaje Decimal  @db.Decimal(5, 2) @default(0) @map("descuento_porcentaje")
+  descuentoPorcentaje Decimal  @default(0) @map("descuento_porcentaje") @db.Decimal(5, 2)
   imagenPrincipal     String?  @map("imagen_principal")
   isFeatured          Boolean  @default(false) @map("is_featured")
   isActive            Boolean  @default(true) @map("is_active")
@@ -593,11 +629,11 @@ model Paquete {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
-  hospedaje  Hospedaje  @relation(fields: [hospedajeId], references: [id])
-  habitacion Habitacion @relation(fields: [habitacionId], references: [id])
-  actividad  Actividad? @relation("PaquetesTuridoveActividad", fields: [actividadId], references: [id])
-  vehiculo   Vehiculo?  @relation(fields: [vehiculoId], references: [id])
-  proveedor  User?      @relation("PaquetesDeProveedor", fields: [proveedorId], references: [id])
+  hospedaje  Hospedaje        @relation(fields: [hospedajeId], references: [id])
+  habitacion Habitacion       @relation(fields: [habitacionId], references: [id])
+  actividad  Actividad?       @relation("PaquetesTuridoveActividad", fields: [actividadId], references: [id])
+  vehiculo   Vehiculo?        @relation(fields: [vehiculoId], references: [id])
+  proveedor  User?            @relation("PaquetesDeProveedor", fields: [proveedorId], references: [id])
   reservas   ReservaPaquete[]
 
   @@index([slug])
@@ -611,7 +647,7 @@ model ReservaPaquete {
   paqueteId   String   @map("paquete_id")
   fechaInicio DateTime @map("fecha_inicio")
   huespedes   Int      @default(1)
-  precioFinal Decimal  @db.Decimal(10, 2) @map("precio_final")
+  precioFinal Decimal  @map("precio_final") @db.Decimal(10, 2)
 
   reserva Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
   paquete Paquete @relation(fields: [paqueteId], references: [id])
