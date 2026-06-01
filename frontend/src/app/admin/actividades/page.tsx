@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
 import { Plus, Eye, Pencil, Power, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { actividadesService } from "@/services/actividades.service";
-
-const TIPOS = ["AVENTURA", "CULTURAL", "GASTRONOMICA", "NATURALEZA", "EDUCATIVA", "DEPORTIVA"];
-const tipoColor: Record<string, string> = { AVENTURA: "bg-red-100 text-red-800", CULTURAL: "bg-purple-100 text-purple-800", GASTRONOMICA: "bg-amber-100 text-amber-800", NATURALEZA: "bg-green-100 text-green-800", EDUCATIVA: "bg-blue-100 text-blue-800", DEPORTIVA: "bg-orange-100 text-orange-800" };
+import { categoriasActividadService } from "@/services/categorias-actividad.service";
+import { ItinerarioEditor } from "@/components/actividades/itinerario-editor";
 
 const schema = z.object({
   nombre: z.string().min(2, "Minimo 2 caracteres"),
@@ -40,7 +40,13 @@ export default function AdminActividadesPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sel, setSel] = useState<any>(null);
-  const [tipo, setTipo] = useState("NATURALEZA");
+  const [categoriaId, setCategoriaId] = useState<string>("");
+  const [estado, setEstado] = useState<'DRAFT' | 'ACTIVE' | 'INACTIVE'>('DRAFT');
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ['admin', 'categorias-actividad'],
+    queryFn: () => categoriasActividadService.getAll({ soloActivas: true }),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "actividades", search],
@@ -72,7 +78,9 @@ export default function AdminActividadesPage() {
   const { register: eReg, handleSubmit: eSubmit, reset: editReset, formState: { errors: eErr } } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const openEdit = (item: any) => {
-    setSel(item); setTipo(item.tipo);
+    setSel(item);
+    setCategoriaId(item.categoriaId ?? item.categoria?.id ?? '');
+    setEstado(item.estado ?? 'DRAFT');
     editReset({ nombre: item.nombre, descripcion: item.descripcion, ubicacion: item.ubicacion, provincia: item.provincia, distrito: item.distrito, duracionHoras: item.duracionHoras, capacidadMaxima: item.capacidadMaxima, edadMinima: item.edadMinima });
     setEditOpen(true);
   };
@@ -81,10 +89,14 @@ export default function AdminActividadesPage() {
 
   const columns: DataTableColumn<any>[] = [
     { key: "nombre", header: "Nombre" },
-    { key: "tipo", header: "Tipo", render: (i) => <Badge variant="outline" className={tipoColor[i.tipo] || ""}>{i.tipo}</Badge> },
+    { key: "categoria", header: "Categoría", render: (i: any) => <span className="text-sm font-body text-navy-700">{i.categoria?.nombre ?? '—'}</span> },
+    { key: "estado", header: "Estado", render: (i: any) => {
+      const cls = { DRAFT: 'bg-navy-50 text-navy-500', ACTIVE: 'bg-green-50 text-green-700', INACTIVE: 'bg-red-50 text-red-700' }[i.estado as 'DRAFT'|'ACTIVE'|'INACTIVE'] ?? 'bg-navy-50 text-navy-500';
+      return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cls}`}>{i.estado}</span>;
+    }},
     { key: "provincia", header: "Provincia" },
     { key: "duracionHoras", header: "Duracion", render: (i) => `${i.duracionHoras}h` },
-    { key: "activo", header: "Estado", render: (i) => <Badge variant={i.activo ? "default" : "secondary"}>{i.activo ? "Activo" : "Inactivo"}</Badge> },
+    { key: "activo", header: "Activo", render: (i) => <Badge variant={i.activo ? "default" : "secondary"}>{i.activo ? "Activo" : "Inactivo"}</Badge> },
     {
       key: "acciones", header: "Acciones",
       render: (i) => (
@@ -98,13 +110,32 @@ export default function AdminActividadesPage() {
     },
   ];
 
-  const formFields = (reg: any, err: any, isEdit = false) => (
+  const formFields = (reg: any, err: any) => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2"><Label>Nombre *</Label><Input {...reg("nombre")} />{err.nombre && <p className="text-sm text-destructive">{err.nombre.message}</p>}</div>
-        <div className="space-y-2"><Label>Tipo *</Label>
-          <Select value={tipo} onValueChange={setTipo}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TIPOS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
+        <div className="space-y-1">
+          <Label>Categoría</Label>
+          <Select value={categoriaId} onValueChange={setCategoriaId}>
+            <SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger>
+            <SelectContent>
+              {categorias.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      </div>
+      <div className="space-y-1">
+        <Label>Estado</Label>
+        <Select value={estado} onValueChange={(v) => setEstado(v as 'DRAFT' | 'ACTIVE' | 'INACTIVE')}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="DRAFT">Borrador</SelectItem>
+            <SelectItem value="ACTIVE">Activa</SelectItem>
+            <SelectItem value="INACTIVE">Inactiva</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-2"><Label>Descripción *</Label><Input {...reg("descripcion")} />{err.descripcion && <p className="text-sm text-destructive">{err.descripcion.message}</p>}</div>
       <div className="grid grid-cols-2 gap-4">
@@ -121,18 +152,40 @@ export default function AdminActividadesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Actividades" description="Gestión de actividades del sistema" action={<Button onClick={() => { setTipo("NATURALEZA"); setCreateOpen(true); }}><Plus className="mr-2 h-4 w-4" />Nueva Actividad</Button>} />
+      <PageHeader
+        title="Actividades"
+        description="Gestión de actividades del sistema"
+        action={
+          <div className="flex items-center gap-3">
+            <Link href="/admin/actividades/categorias" className="text-sm font-body text-gold-600 hover:text-gold-700">
+              Gestionar categorías →
+            </Link>
+            <Button onClick={() => { setCategoriaId(""); setEstado("DRAFT"); setCreateOpen(true); }}><Plus className="mr-2 h-4 w-4" />Nueva Actividad</Button>
+          </div>
+        }
+      />
       <DataTable columns={columns} data={Array.isArray(items) ? items : []} loading={isLoading} searchPlaceholder="Buscar actividad..." onSearch={setSearch} searchValue={search} emptyMessage="No se encontraron actividades" />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent><DialogHeader><DialogTitle>Nueva Actividad</DialogTitle><DialogDescription>Completa los datos.</DialogDescription></DialogHeader>
-          <form onSubmit={cSubmit((d) => createMut.mutate({ ...d, tipo }))}>{formFields(cReg, cErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button><Button type="submit" disabled={createMut.isPending}>{createMut.isPending ? "Creando..." : "Crear"}</Button></DialogFooter></form>
+          <form onSubmit={cSubmit((d) => createMut.mutate({ ...d, categoriaId, estado }))}>{formFields(cReg, cErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button><Button type="submit" disabled={createMut.isPending}>{createMut.isPending ? "Creando..." : "Crear"}</Button></DialogFooter></form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent><DialogHeader><DialogTitle>Editar Actividad</DialogTitle><DialogDescription>Modifica los datos.</DialogDescription></DialogHeader>
-          <form onSubmit={eSubmit((d) => sel && editMut.mutate({ id: sel.id, p: { ...d, tipo } }))}>{formFields(eReg, eErr, true)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button><Button type="submit" disabled={editMut.isPending}>{editMut.isPending ? "Guardando..." : "Guardar"}</Button></DialogFooter></form>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Editar Actividad</DialogTitle><DialogDescription>Modifica los datos.</DialogDescription></DialogHeader>
+          <form onSubmit={eSubmit((d) => sel && editMut.mutate({ id: sel.id, p: { ...d, categoriaId, estado } }))}>{formFields(eReg, eErr)}<DialogFooter className="mt-4"><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button><Button type="submit" disabled={editMut.isPending}>{editMut.isPending ? "Guardando..." : "Guardar"}</Button></DialogFooter></form>
+          {sel?.id && (
+            <div className="mt-6 pt-6 border-t border-navy-100/50">
+              <ItinerarioEditor
+                actividadId={sel.id}
+                initialItems={(sel.itinerario ?? []).map((i: any) => ({
+                  dia: i.dia, titulo: i.titulo, descripcion: i.descripcion,
+                  lat: i.lat ?? undefined, lng: i.lng ?? undefined, nombreUbicacion: i.nombreUbicacion ?? undefined,
+                }))}
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -140,11 +193,12 @@ export default function AdminActividadesPage() {
         <DialogContent><DialogHeader><DialogTitle>Detalles de la Actividad</DialogTitle><DialogDescription>Información completa.</DialogDescription></DialogHeader>
           {sel && (<div className="space-y-3"><div className="grid grid-cols-2 gap-4">
             <div><p className="text-sm font-medium text-muted-foreground">Nombre</p><p className="text-sm">{sel.nombre}</p></div>
-            <div><p className="text-sm font-medium text-muted-foreground">Tipo</p><Badge variant="outline" className={tipoColor[sel.tipo] || ""}>{sel.tipo}</Badge></div>
+            <div><p className="text-sm font-medium text-muted-foreground">Categoría</p><span className="text-sm">{sel.categoria?.nombre ?? '—'}</span></div>
+            <div><p className="text-sm font-medium text-muted-foreground">Estado</p><span className="text-sm">{sel.estado}</span></div>
             <div><p className="text-sm font-medium text-muted-foreground">Ubicacion</p><p className="text-sm">{sel.ubicacion}</p></div>
             <div><p className="text-sm font-medium text-muted-foreground">Duracion</p><p className="text-sm">{sel.duracionHoras}h</p></div>
             <div><p className="text-sm font-medium text-muted-foreground">Capacidad</p><p className="text-sm">{sel.capacidadMaxima} personas</p></div>
-            <div><p className="text-sm font-medium text-muted-foreground">Estado</p><Badge variant={sel.activo ? "default" : "secondary"}>{sel.activo ? "Activo" : "Inactivo"}</Badge></div>
+            <div><p className="text-sm font-medium text-muted-foreground">Activo</p><Badge variant={sel.activo ? "default" : "secondary"}>{sel.activo ? "Activo" : "Inactivo"}</Badge></div>
             <div className="col-span-2"><p className="text-sm font-medium text-muted-foreground">Descripción</p><p className="text-sm">{sel.descripcion}</p></div>
           </div><DialogFooter><Button variant="outline" onClick={() => setDetailOpen(false)}>Cerrar</Button><Button onClick={() => { setDetailOpen(false); openEdit(sel); }}><Pencil className="mr-2 h-4 w-4" />Editar</Button></DialogFooter></div>)}
         </DialogContent>
