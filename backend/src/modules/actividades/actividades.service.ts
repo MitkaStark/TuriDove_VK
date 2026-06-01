@@ -10,14 +10,16 @@ import { UpdateActividadDto } from './dto/update-actividad.dto';
 import { CreateTarifaActividadDto } from './dto/create-tarifa-actividad.dto';
 import { CreateCalendarioDto } from './dto/create-calendario.dto';
 import { CreatePaqueteDto } from './dto/create-paquete.dto';
+import { slugify, ensureUniqueSlug } from '../../common/utils/slug.util';
 
 interface PaginationParams {
   page?: number;
   limit?: number;
-  tipo?: string;
+  categoriaId?: string;
   provincia?: string;
   search?: string;
   isFeatured?: boolean;
+  estado?: string;
 }
 
 interface AuthUser {
@@ -32,17 +34,12 @@ export class ActividadesService {
   // ─── ACTIVIDADES CRUD ──────────────────────────────────────────────
 
   async findAll(params: PaginationParams) {
-    const { page = 1, limit = 10, tipo, provincia, search, isFeatured } = params;
+    const { page = 1, limit = 12, categoriaId, provincia, search, isFeatured, estado } = params as any;
     const skip = (page - 1) * limit;
 
     const where: any = {};
-
-    if (tipo) {
-      where.tipo = tipo;
-    }
-    if (provincia) {
-      where.provincia = { contains: provincia, mode: 'insensitive' };
-    }
+    if (categoriaId) where.categoriaId = categoriaId;
+    if (provincia) where.provincia = { contains: provincia, mode: 'insensitive' };
     if (search) {
       where.OR = [
         { nombre: { contains: search, mode: 'insensitive' } },
@@ -50,31 +47,22 @@ export class ActividadesService {
         { ubicacion: { contains: search, mode: 'insensitive' } },
       ];
     }
-    if (isFeatured !== undefined) {
-      where.isFeatured = isFeatured;
-    }
+    if (isFeatured !== undefined) where.isFeatured = isFeatured;
+    if (estado) where.estado = estado;
+    else where.estado = 'ACTIVE';
 
     const [data, total] = await Promise.all([
       this.prisma.actividad.findMany({
         where,
+        include: { categoria: true, tarifas: true },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          tarifas: {
-            where: { fechaFin: { gte: new Date() } },
-            orderBy: { precioAdulto: 'asc' },
-            take: 1,
-          },
-        },
       }),
       this.prisma.actividad.count({ where }),
     ]);
 
-    return {
-      data,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    };
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
   async findMisActividades(user: AuthUser, params: PaginationParams) {
@@ -90,6 +78,7 @@ export class ActividadesService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
+          categoria: true,
           tarifas: true,
           calendarios: {
             where: { fecha: { gte: new Date() } },
@@ -111,7 +100,9 @@ export class ActividadesService {
     const actividad = await this.prisma.actividad.findUnique({
       where: { id },
       include: {
+        categoria: true,
         tarifas: { orderBy: { temporada: 'asc' } },
+        itinerario: { orderBy: { dia: 'asc' } },
         calendarios: {
           where: { fecha: { gte: new Date() } },
           orderBy: { fecha: 'asc' },
@@ -126,22 +117,74 @@ export class ActividadesService {
     return actividad;
   }
 
+  async findBySlug(slug: string) {
+    const actividad = await this.prisma.actividad.findUnique({
+      where: { slug },
+      include: {
+        categoria: true,
+        tarifas: true,
+        itinerario: { orderBy: { dia: 'asc' } },
+      },
+    });
+    if (!actividad) throw new NotFoundException('Actividad no encontrada');
+    return actividad;
+  }
+
   async create(dto: CreateActividadDto, user: AuthUser) {
+    const cat = await this.prisma.categoriaActividad.findUnique({ where: { id: dto.categoriaId } });
+    if (!cat) throw new BadRequestException('Categoría no encontrada');
+
+    const baseSlug = slugify(`${dto.nombre} ${dto.provincia}`);
+    if (!baseSlug) throw new BadRequestException('El nombre debe contener al menos una letra o número');
+    const slug = await ensureUniqueSlug(baseSlug, async (s) => {
+      const found = await this.prisma.actividad.findUnique({ where: { slug: s } });
+      return !!found;
+    });
+
     return this.prisma.actividad.create({
-      data: ({
-        ...dto as any,
+      data: {
+        nombre: dto.nombre,
+        slug,
+        descripcion: dto.descripcion,
+        categoriaId: dto.categoriaId,
+        duracionHoras: dto.duracionHoras,
+        ubicacion: dto.ubicacion,
+        provincia: dto.provincia,
+        distrito: dto.distrito,
+        imagenPrincipal: dto.imagenPrincipal,
+        imagenes: dto.imagenes ?? [],
+        incluye: dto.incluye ?? [],
+        noIncluye: dto.noIncluye ?? [],
+        requisitos: dto.requisitos ?? [],
+        edadMinima: dto.edadMinima ?? 0,
+        capacidadMaxima: dto.capacidadMaxima,
+        estado: dto.estado ?? 'DRAFT',
+        isFeatured: dto.isFeatured ?? false,
         proveedorId: user.id,
-        activo: true,
-      }) as any,
+      },
+      include: { categoria: true },
     });
   }
 
   async update(id: string, dto: UpdateActividadDto, user: AuthUser) {
-    await this.findOneAndVerifyOwnership(id, user);
+    const existing = await this.findOneAndVerifyOwnership(id, user);
+
+    if (dto.nombre && dto.nombre !== existing.nombre) {
+      const baseSlug = slugify(`${dto.nombre} ${dto.provincia ?? existing.provincia}`);
+      if (baseSlug) {
+        const newSlug = await ensureUniqueSlug(baseSlug, async (s) => {
+          if (s === existing.slug) return false;
+          const f = await this.prisma.actividad.findUnique({ where: { slug: s } });
+          return !!f;
+        });
+        (dto as any).slug = newSlug;
+      }
+    }
 
     return this.prisma.actividad.update({
       where: { id },
       data: dto as any,
+      include: { categoria: true },
     });
   }
 

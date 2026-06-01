@@ -46,21 +46,31 @@ export class ActividadesController {
   @ApiOperation({ summary: 'Listar actividades (público, paginado)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'tipo', required: false, type: String })
+  @ApiQuery({ name: 'categoriaId', required: false, type: String })
   @ApiQuery({ name: 'provincia', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'featured', required: false, type: String })
+  @ApiQuery({ name: 'estado', required: false, type: String })
   @ApiResponse({ status: 200, description: 'Lista paginada de actividades' })
   findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('tipo') tipo?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('categoriaId') categoriaId?: string,
     @Query('provincia') provincia?: string,
     @Query('search') search?: string,
     @Query('featured') featured?: string,
+    @Query('estado') estado?: string,
   ) {
     const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
-    return this.actividadesService.findAll({ page, limit, tipo, provincia, search, isFeatured });
+    return this.actividadesService.findAll({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      categoriaId,
+      provincia,
+      search,
+      isFeatured,
+      estado,
+    });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -80,8 +90,18 @@ export class ActividadesController {
   }
 
   @Public()
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Obtener actividad por slug' })
+  @ApiParam({ name: 'slug', type: String })
+  @ApiResponse({ status: 200, description: 'Detalle de la actividad' })
+  @ApiResponse({ status: 404, description: 'Actividad no encontrada' })
+  findBySlug(@Param('slug') slug: string) {
+    return this.actividadesService.findBySlug(slug);
+  }
+
+  @Public()
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener actividad con tarifas' })
+  @ApiOperation({ summary: 'Obtener actividad con tarifas e itinerario' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'Detalle de la actividad' })
   @ApiResponse({ status: 404, description: 'Actividad no encontrada' })
@@ -121,7 +141,7 @@ export class ActividadesController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Eliminar actividad (soft delete)' })
+  @ApiOperation({ summary: 'Eliminar actividad' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 204, description: 'Actividad eliminada' })
   @ApiResponse({ status: 403, description: 'Sin permiso' })
