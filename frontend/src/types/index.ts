@@ -34,14 +34,6 @@ export enum TipoHabitacion {
   DORMITORIO = 'DORMITORIO',
 }
 
-export enum TipoActividad {
-  AVENTURA = 'AVENTURA',
-  CULTURAL = 'CULTURAL',
-  GASTRONOMICA = 'GASTRONOMICA',
-  NATURALEZA = 'NATURALEZA',
-  EDUCATIVA = 'EDUCATIVA',
-  DEPORTIVA = 'DEPORTIVA',
-}
 
 export enum TipoVehiculo {
   SEDAN = 'SEDAN',
@@ -166,29 +158,56 @@ export interface DisponibilidadHospedaje {
 // Actividades
 // ──────────────────────────────────────────────
 
+export type EstadoActividad = 'DRAFT' | 'ACTIVE' | 'INACTIVE';
+
+export interface CategoriaActividad {
+  id: string;
+  nombre: string;
+  slug: string;
+  icono: string | null;
+  descripcion: string | null;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ItinerarioItem {
+  id: string;
+  actividadId: string;
+  dia: number;
+  titulo: string;
+  descripcion: string;
+  lat: number | null;
+  lng: number | null;
+  nombreUbicacion: string | null;
+  createdAt: string;
+}
+
 export interface Actividad {
   id: string;
   nombre: string;
+  slug: string;
   descripcion: string;
-  tipo: TipoActividad;
+  categoriaId: string;
+  categoria?: CategoriaActividad;
   duracionHoras: number;
   ubicacion: string;
   provincia: string;
   distrito: string;
+  imagenPrincipal: string | null;
   imagenes: string[];
   incluye: string[];
   noIncluye: string[];
   requisitos: string[];
   edadMinima: number;
   capacidadMaxima: number;
-  activo: boolean;
+  estado: EstadoActividad;
   proveedorId: string;
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
-  proveedor?: User;
-  tarifas?: TarifaActividad[];
-  paquetes?: PaqueteActividad[];
-  calendarios?: CalendarioActividad[];
+  tarifas?: any[];
+  itinerario?: ItinerarioItem[];
 }
 
 export interface TarifaActividad {
