@@ -5,8 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { ArrowLeft, MapPin, Clock, Users, Mountain, Sun, TreePine, Waves, GraduationCap, CalendarDays } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, MapPin, Clock, Mountain, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +15,9 @@ import { reservasService } from "@/services/reservas.service";
 import { useAuthStore } from "@/store/auth.store";
 import { CheckoutSummary } from "@/components/shared/checkout-summary";
 import { applyMargin } from "@/lib/margins";
+import { ItinerarioTimeline } from "@/components/actividades/itinerario-timeline";
 
-const tipoIcons: Record<string, any> = {
-  AVENTURA: Mountain, GASTRONOMICA: Sun, NATURALEZA: TreePine, CULTURAL: Users, DEPORTIVA: Waves, EDUCATIVA: GraduationCap,
-};
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function ActividadDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +35,16 @@ export default function ActividadDetailPage() {
 
   const { data: actividad, isLoading } = useQuery({
     queryKey: ["public", "actividad", id],
-    queryFn: () => actividadesService.getById(id),
+    queryFn: async () => {
+      if (UUID_RE.test(id)) {
+        const a = await actividadesService.getById(id);
+        if (a?.slug && typeof window !== 'undefined') {
+          router.replace(`/actividades/${a.slug}`);
+        }
+        return a;
+      }
+      return actividadesService.getBySlug(id);
+    },
     enabled: !!id,
   });
 
@@ -64,7 +71,7 @@ export default function ActividadDetailPage() {
     if (!fecha) { toast.error("Selecciona una fecha"); return; }
     if (parseInt(adultos) < 1) { toast.error("Debe haber al menos 1 adulto"); return; }
     reservaMut.mutate({
-      actividades: [{ actividadId: id, fecha, adultos: parseInt(adultos), ninos: parseInt(ninos) }],
+      actividades: [{ actividadId: actividad?.id ?? id, fecha, adultos: parseInt(adultos), ninos: parseInt(ninos) }],
       notas: notas || undefined,
     });
   };
@@ -73,7 +80,6 @@ export default function ActividadDetailPage() {
   if (!actividad) return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex min-h-[50vh] flex-col items-center justify-center gap-4"><p className="text-sm text-navy-400 font-body">Actividad no encontrada.</p><Link href="/actividades" className="inline-flex items-center gap-2 text-sm text-gold-600 hover:text-gold-700 font-body font-semibold"><ArrowLeft className="h-4 w-4" />Volver</Link></div>;
 
   const a = actividad as any;
-  const Icon = tipoIcons[a.tipo] || Mountain;
   const numAdultos = parseInt(adultos) || 0;
   const numNinos = parseInt(ninos) || 0;
   const precioAdulto = applyMargin(45, 'actividades');
@@ -116,11 +122,13 @@ export default function ActividadDetailPage() {
         <div className="lg:col-span-2 space-y-8">
           {/* Header */}
           <div className="flex items-start gap-5">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gold-50"><Icon className="h-8 w-8 text-gold-500" /></div>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gold-50"><Mountain className="h-8 w-8 text-gold-500" /></div>
             <div>
               <h1 className="text-3xl font-display font-bold text-navy-800 tracking-tight">{a.nombre}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-gold-50 text-gold-700 px-3 py-0.5 text-xs font-medium">{a.tipo}</span>
+                {a.categoria?.nombre && (
+                  <span className="inline-flex items-center rounded-full bg-gold-50 text-gold-700 px-3 py-0.5 text-xs font-medium">{a.categoria.nombre}</span>
+                )}
                 <span className="flex items-center gap-1 text-sm text-navy-400 font-body"><Clock className="h-3.5 w-3.5" />{a.duracionHoras} horas</span>
                 <span className="flex items-center gap-1 text-sm text-navy-400 font-body"><MapPin className="h-3.5 w-3.5 text-gold-500" />{a.ubicacion}</span>
               </div>
@@ -154,6 +162,11 @@ export default function ActividadDetailPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
               <ul className="mt-3 space-y-2">{a.requisitos.map((item: string) => <li key={item} className="flex items-start gap-2 text-sm text-foreground/70"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0"></span>{item}</li>)}</ul>
             </div>
+          )}
+
+          {/* Itinerario */}
+          {actividad?.itinerario && actividad.itinerario.length > 0 && (
+            <ItinerarioTimeline items={actividad.itinerario} />
           )}
         </div>
 
