@@ -50,7 +50,7 @@ export default function AdminActividadesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "actividades", search],
-    queryFn: () => actividadesService.getAll({ search: search || undefined, limit: 100 }),
+    queryFn: () => actividadesService.getAll({ search: search || undefined, estado: 'ALL', limit: 100 }),
   });
 
   const createMut = useMutation({

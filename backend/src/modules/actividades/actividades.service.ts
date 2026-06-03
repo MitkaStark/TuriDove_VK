@@ -48,8 +48,9 @@ export class ActividadesService {
       ];
     }
     if (isFeatured !== undefined) where.isFeatured = isFeatured;
-    if (estado) where.estado = estado;
-    else where.estado = 'ACTIVE';
+    // 'ALL' = sin filtro (uso admin). Sin estado = default público ACTIVE.
+    if (estado && estado !== 'ALL') where.estado = estado;
+    else if (!estado) where.estado = 'ACTIVE';
 
     const [data, total] = await Promise.all([
       this.prisma.actividad.findMany({
