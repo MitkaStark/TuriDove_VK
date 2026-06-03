@@ -684,3 +684,17 @@ model StripeEvent {
 
   @@map("stripe_events")
 }
+
+// Tabla singleton con las claves Stripe cifradas (AES-256-GCM).
+// Si no hay fila o los campos están null, el backend usa env vars como fallback.
+model ConfiguracionStripe {
+  id               String   @id @default("singleton")
+  secretKeyEnc     String?  @map("secret_key_enc")
+  publicKey        String?  @map("public_key")
+  webhookSecretEnc String?  @map("webhook_secret_enc")
+  modo             String?
+  updatedBy        String?  @map("updated_by")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_stripe")
+}

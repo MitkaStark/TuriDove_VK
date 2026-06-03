@@ -37,6 +37,7 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3003}
       UPLOADS_DIR: /app/uploads
+      CONFIG_ENCRYPTION_KEY: ${CONFIG_ENCRYPTION_KEY:-}
       # Stripe (configurable desde .env.docker)
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_REPLACE_ME}
       STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY:-pk_test_REPLACE_ME}
