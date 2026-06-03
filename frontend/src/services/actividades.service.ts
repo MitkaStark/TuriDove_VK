@@ -17,9 +17,17 @@ interface ActividadQueryParams {
   estado?: string;
 }
 
+function cleanParams<T extends Record<string, any>>(params: T): Partial<T> {
+  const out: any = {};
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') out[k] = v;
+  }
+  return out;
+}
+
 export const actividadesService = {
   async getAll(params: ActividadQueryParams = {}) {
-    const { data } = await api.get('/actividades', { params });
+    const { data } = await api.get('/actividades', { params: cleanParams(params) });
     return data as { data: Actividad[]; meta: { page: number; limit: number; total: number; totalPages: number } };
   },
 
