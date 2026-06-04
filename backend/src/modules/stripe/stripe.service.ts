@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import StripeLib = require('stripe');
 import { PrismaService } from '../../prisma/prisma.service';
 import { decryptSecret, encryptSecret, maskKey } from '../../common/utils/crypto.util';
@@ -201,6 +201,14 @@ export class StripeService implements OnModuleInit {
     successUrl: string;
     cancelUrl: string;
   }): Promise<{ url: string; sessionId: string }> {
+    // Validar que las claves están configuradas antes de llamar a Stripe
+    const cfg = this.cachedConfig;
+    if (!cfg || !cfg.secretKey || cfg.secretKey.includes('placeholder') || cfg.secretKey.includes('REPLACE_ME')) {
+      throw new ServiceUnavailableException(
+        'La pasarela de pago no está configurada. Un administrador debe configurarla en /admin/configuracion/pasarela.',
+      );
+    }
+
     const session = await this.stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
