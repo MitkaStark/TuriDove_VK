@@ -1,10 +1,13 @@
 import { StripeService } from './stripe.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('StripeService.toCents', () => {
   let svc: StripeService;
   beforeAll(() => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_dummy';
-    svc = new StripeService();
+    // Mock mínimo de PrismaService — toCents() no toca BD
+    const prismaMock = {} as PrismaService;
+    svc = new StripeService(prismaMock);
   });
 
   it('1 USD = 100 cents', () => {
