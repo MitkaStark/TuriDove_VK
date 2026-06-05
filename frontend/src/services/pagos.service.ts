@@ -21,4 +21,9 @@ export const pagosService = {
     const { data } = await api.get(`/pagos/reserva/${reservaId}`);
     return data;
   },
+
+  async reembolsar(id: string): Promise<Pago> {
+    const { data } = await api.patch(`/pagos/${id}/reembolso`);
+    return data;
+  },
 };
