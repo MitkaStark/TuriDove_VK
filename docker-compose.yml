@@ -20,6 +20,23 @@ services:
     networks:
       - turidove_vk_net
 
+  redis:
+    image: redis:7-alpine
+    container_name: turidove_vk_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - turidove_vk_net
+
   backend:
     build:
       context: ./backend
@@ -28,6 +45,8 @@ services:
     restart: unless-stopped
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: production
@@ -45,6 +64,8 @@ services:
       STRIPE_CURRENCY: ${STRIPE_CURRENCY:-usd}
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-http://localhost:3003/reservas/{RESERVA_ID}/pago/exito}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-http://localhost:3003/reservas/{RESERVA_ID}/pago/cancelado}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT_INTERNAL:-6379}
     ports:
       - "3002:3001"
     volumes:
@@ -73,6 +94,8 @@ services:
 volumes:
   postgres_data:
     name: turidove_vk_postgres_data
+  redis_data:
+    name: turidove_vk_redis_data
 
 networks:
   turidove_vk_net:
