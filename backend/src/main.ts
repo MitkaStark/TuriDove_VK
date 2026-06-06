@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger as PinoLogger } from 'nestjs-pino';
+import helmet from 'helmet';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -38,6 +39,22 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com'],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https://api.stripe.com'],
+          frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Global pipes
   app.useGlobalPipes(
