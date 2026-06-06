@@ -5,6 +5,8 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateEstadoDto } from './dto/update-estado.dto';
@@ -15,7 +17,10 @@ import { Decimal } from '@prisma/client/runtime/library';
 export class ReservasService {
   private readonly logger = new Logger(ReservasService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue('reservas-expirations') private readonly expirationsQueue: Queue,
+  ) {}
 
   async create(userId: string, dto: CreateReservaDto) {
     const hasItems =
@@ -169,6 +174,20 @@ export class ReservasService {
 
       return created;
     });
+
+    const ttlMinutes = parseInt(process.env.RESERVA_TTL_MINUTES ?? '15', 10);
+    const expiresAt = new Date(Date.now() + ttlMinutes * 60_000);
+
+    await this.prisma.reserva.update({
+      where: { id: reserva.id },
+      data: { expiresAt },
+    });
+
+    await this.expirationsQueue.add(
+      'expire-reserva',
+      { reservaId: reserva.id },
+      { delay: ttlMinutes * 60_000, jobId: `expire-${reserva.id}` },
+    );
 
     return reserva;
   }
