@@ -698,3 +698,35 @@ model ConfiguracionStripe {
 
   @@map("configuracion_stripe")
 }
+
+model ConfiguracionEmail {
+  id              String   @id @default("singleton")
+  provider        String?
+  resendApiKeyEnc String?  @map("resend_api_key_enc")
+  smtpHost        String?  @map("smtp_host")
+  smtpPort        Int?     @map("smtp_port")
+  smtpUserEnc     String?  @map("smtp_user_enc")
+  smtpPassEnc     String?  @map("smtp_pass_enc")
+  fromEmail       String?  @map("from_email")
+  fromName        String?  @map("from_name")
+  updatedBy       String?  @map("updated_by")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_email")
+}
+
+model EmailLog {
+  id         String   @id @default(uuid())
+  toEmail    String   @map("to_email")
+  subject    String
+  template   String
+  status     String
+  errorMsg   String?  @map("error_msg")
+  providerId String?  @map("provider_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([toEmail])
+  @@index([template])
+  @@index([status])
+  @@map("email_logs")
+}
