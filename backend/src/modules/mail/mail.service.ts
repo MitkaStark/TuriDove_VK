@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { decryptSecret, encryptSecret, maskKey } from '../../common/utils/crypto.util';
 import { Resend } from 'resend';
@@ -21,7 +23,10 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
   private cachedConfig: MailConfig | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue('emails') private readonly emailsQueue: Queue,
+  ) {}
 
   async loadConfig(): Promise<MailConfig> {
     let row: any = null;
@@ -160,6 +165,10 @@ export class MailService {
     } catch (e) {
       this.logger.warn(`No se pudo registrar email_log: ${(e as Error).message}`);
     }
+  }
+
+  async send(to: string, email: RenderedEmail, template: string): Promise<void> {
+    await this.emailsQueue.add('send-email', { to, email, template });
   }
 }
 
