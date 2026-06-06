@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggerModule } from 'nestjs-pino';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -27,6 +28,16 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
       isGlobal: true,
       load: [configuration],
       envFilePath: ['.env', '.env.example'],
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { singleLine: true } }
+          : undefined,
+        redact: ['req.headers.authorization', 'req.headers.cookie', '*.password', '*.token', '*.secretKey'],
+        customProps: () => ({ service: 'turidove-backend' }),
+        autoLogging: true,
+      },
     }),
     RedisModule,
     QueueModule,
