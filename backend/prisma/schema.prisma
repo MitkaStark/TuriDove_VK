@@ -481,6 +481,9 @@ model Reserva {
   pagos              Pago[]
   comisiones         Comision[]
 
+  expiresAt      DateTime? @map("expires_at")
+  idempotencyKey String?   @unique @map("idempotency_key")
+
   @@index([clienteId])
   @@index([estado])
   @@index([codigo])
