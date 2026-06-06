@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { Redis } from 'ioredis';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -39,6 +42,21 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
         autoLogging: true,
       },
     }),
+    ThrottlerModule.forRootAsync({
+      useFactory: () => ({
+        throttlers: [
+          { name: 'short',  ttl: 1000,  limit: 10 },
+          { name: 'medium', ttl: 60_000, limit: 120 },
+        ],
+        storage: new ThrottlerStorageRedisService(
+          new Redis({
+            host: process.env.REDIS_HOST ?? 'localhost',
+            port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+            maxRetriesPerRequest: null,
+          }),
+        ),
+      }),
+    }),
     RedisModule,
     QueueModule,
     PrismaModule,
@@ -57,6 +75,10 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     StripeModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
