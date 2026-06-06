@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { Bell, Moon, Globe, Shield, Save, Percent, DollarSign, Info, CreditCard, ChevronRight } from "lucide-react";
+import { Bell, Moon, Globe, Shield, Save, Percent, DollarSign, Info, CreditCard, ChevronRight, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +65,25 @@ export default function AdminConfiguracionPage() {
               <h3 className="text-base font-display font-bold text-navy-800">Pasarela de pago</h3>
               <p className="text-sm text-navy-400 font-body mt-0.5">
                 Estado de la integración con Stripe (modo, claves, webhook).
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-navy-400 shrink-0" />
+          </div>
+        </Link>
+
+        {/* Email transaccional */}
+        <Link
+          href="/admin/configuracion/email"
+          className="block bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all p-5"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gold-50 flex items-center justify-center shrink-0">
+              <Mail className="w-6 h-6 text-gold-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base font-display font-bold text-navy-800">Email transaccional</h3>
+              <p className="text-sm text-navy-400 font-body mt-0.5">
+                Configuracion del proveedor de emails (Resend / SMTP).
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-navy-400 shrink-0" />
