@@ -10,6 +10,10 @@ import { StripeService } from '../stripe/stripe.service';
 import { CreatePagoDto } from './dto/create-pago.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 import { v4 as uuid } from 'uuid';
+import { MailService } from '../mail/mail.service';
+import { reservaConfirmadaTemplate } from '../mail/templates/reserva-confirmada';
+import { pagoFallidoTemplate } from '../mail/templates/pago-fallido';
+import { reembolsoProcesadoTemplate } from '../mail/templates/reembolso-procesado';
 
 @Injectable()
 export class PagosService {
@@ -18,6 +22,7 @@ export class PagosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripe: StripeService,
+    private readonly mail: MailService,
   ) {}
 
   async create(userId: string, dto: CreatePagoDto) {
@@ -123,68 +128,152 @@ export class PagosService {
 
   async handleWebhook(rawBody: Buffer, signature: string) {
     const event = this.stripe.verifyWebhook(rawBody, signature);
+    return this.handleWebhookEvent(event);
+  }
 
+  async handleWebhookEvent(event: any) {
     const existing = await this.prisma.stripeEvent.findUnique({
       where: { stripeEventId: event.id },
     });
-    if (existing) return { received: true, alreadyProcessed: true };
-
-    await this.prisma.stripeEvent.create({
-      data: {
-        stripeEventId: event.id,
-        type: event.type,
-        payload: event as any,
-      },
-    });
-
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any;
-        const reservaId = session.metadata?.reservaId;
-        if (!reservaId) break;
-        await this.prisma.pago.updateMany({
-          where: { stripeSessionId: session.id },
-          data: { estado: 'COMPLETADO', stripePaymentId: session.payment_intent },
-        });
-        await this.prisma.reserva.update({
-          where: { id: reservaId },
-          data: { estado: 'CONFIRMADA' },
-        });
-        break;
-      }
-      case 'checkout.session.expired': {
-        const session = event.data.object as any;
-        const reservaId = session.metadata?.reservaId;
-        if (!reservaId) break;
-        await this.prisma.pago.updateMany({
-          where: { stripeSessionId: session.id },
-          data: { estado: 'FALLIDO' },
-        });
-        await this.prisma.reserva.update({
-          where: { id: reservaId },
-          data: { estado: 'CANCELADA' },
-        });
-        break;
-      }
-      case 'payment_intent.payment_failed': {
-        const intent = event.data.object as any;
-        await this.prisma.pago.updateMany({
-          where: { stripePaymentId: intent.id },
-          data: { estado: 'FALLIDO' },
-        });
-        break;
-      }
-      case 'charge.refunded': {
-        const charge = event.data.object as any;
-        await this.prisma.pago.updateMany({
-          where: { stripePaymentId: charge.payment_intent },
-          data: { estado: 'REEMBOLSADO' },
-        });
-        break;
-      }
+    if (existing && existing.processedSuccessfully) {
+      return { received: true, alreadyProcessed: true };
     }
 
-    return { received: true };
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as any;
+          const reservaId = session.metadata?.reservaId;
+          if (!reservaId) break;
+          await this.prisma.pago.updateMany({
+            where: { stripeSessionId: session.id },
+            data: { estado: 'COMPLETADO', stripePaymentId: session.payment_intent },
+          });
+          await this.prisma.reserva.update({
+            where: { id: reservaId },
+            data: { estado: 'CONFIRMADA' },
+          });
+          await this.sendReservaConfirmadaEmail(reservaId);
+          break;
+        }
+        case 'checkout.session.expired': {
+          const session = event.data.object as any;
+          const reservaId = session.metadata?.reservaId;
+          if (!reservaId) break;
+          await this.prisma.pago.updateMany({
+            where: { stripeSessionId: session.id },
+            data: { estado: 'FALLIDO' },
+          });
+          await this.prisma.reserva.update({
+            where: { id: reservaId },
+            data: { estado: 'CANCELADA' },
+          });
+          break;
+        }
+        case 'payment_intent.payment_failed': {
+          const intent = event.data.object as any;
+          await this.prisma.pago.updateMany({
+            where: { stripePaymentId: intent.id },
+            data: { estado: 'FALLIDO' },
+          });
+          const pago = await this.prisma.pago.findFirst({
+            where: { stripePaymentId: intent.id },
+          });
+          if (pago) await this.sendPagoFallidoEmail(pago.reservaId);
+          break;
+        }
+        case 'charge.refunded': {
+          const charge = event.data.object as any;
+          await this.prisma.pago.updateMany({
+            where: { stripePaymentId: charge.payment_intent },
+            data: { estado: 'REEMBOLSADO' },
+          });
+          const pago = await this.prisma.pago.findFirst({
+            where: { stripePaymentId: charge.payment_intent },
+          });
+          if (pago) await this.sendReembolsoEmail(pago.reservaId, String(pago.monto));
+          break;
+        }
+        default:
+          this.logger.warn(`Evento Stripe sin handler: ${event.type}`);
+      }
+
+      await this.prisma.stripeEvent.upsert({
+        where: { stripeEventId: event.id },
+        update: { processedSuccessfully: true, errorMessage: null },
+        create: {
+          stripeEventId: event.id,
+          type: event.type,
+          processedSuccessfully: true,
+          payload: event as any,
+        },
+      });
+
+      return { received: true };
+    } catch (e: any) {
+      const msg = e?.message ?? 'Error procesando webhook';
+      this.logger.error(`Webhook ${event.id} (${event.type}) fallo: ${msg}`);
+      await this.prisma.stripeEvent.upsert({
+        where: { stripeEventId: event.id },
+        update: {
+          processedSuccessfully: false,
+          errorMessage: msg,
+          retries: { increment: 1 },
+        },
+        create: {
+          stripeEventId: event.id,
+          type: event.type,
+          processedSuccessfully: false,
+          errorMessage: msg,
+          retries: 1,
+          payload: event as any,
+        },
+      });
+      throw e;
+    }
+  }
+
+  private async sendReservaConfirmadaEmail(reservaId: string) {
+    const reserva = await this.prisma.reserva.findUnique({
+      where: { id: reservaId },
+      include: { cliente: true },
+    });
+    if (!reserva?.cliente?.email) return;
+    const nombre = `${reserva.cliente.nombre ?? ''} ${reserva.cliente.apellido ?? ''}`.trim() || 'cliente';
+    const email = reservaConfirmadaTemplate({
+      nombre,
+      codigo: reserva.codigo,
+      total: String(reserva.total),
+      moneda: 'USD',
+    });
+    await this.mail.send(reserva.cliente.email, email, 'reserva-confirmada');
+  }
+
+  private async sendPagoFallidoEmail(reservaId: string) {
+    const reserva = await this.prisma.reserva.findUnique({
+      where: { id: reservaId },
+      include: { cliente: true },
+    });
+    if (!reserva?.cliente?.email) return;
+    const nombre = `${reserva.cliente.nombre ?? ''} ${reserva.cliente.apellido ?? ''}`.trim() || 'cliente';
+    const email = pagoFallidoTemplate({ nombre, codigo: reserva.codigo });
+    await this.mail.send(reserva.cliente.email, email, 'pago-fallido');
+  }
+
+  private async sendReembolsoEmail(reservaId: string, total: string) {
+    const reserva = await this.prisma.reserva.findUnique({
+      where: { id: reservaId },
+      include: { cliente: true },
+    });
+    if (!reserva?.cliente?.email) return;
+    const nombre = `${reserva.cliente.nombre ?? ''} ${reserva.cliente.apellido ?? ''}`.trim() || 'cliente';
+    const email = reembolsoProcesadoTemplate({
+      nombre,
+      codigo: reserva.codigo,
+      total,
+      moneda: 'USD',
+    });
+    await this.mail.send(reserva.cliente.email, email, 'reembolso-procesado');
   }
 
   async findAll(pagination: PaginationDto) {
