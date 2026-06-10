@@ -679,12 +679,16 @@ model AuditLog {
 }
 
 model StripeEvent {
-  id            String   @id @default(uuid())
-  stripeEventId String   @unique @map("stripe_event_id")
-  type          String
-  processedAt   DateTime @default(now()) @map("processed_at")
-  payload       Json
+  id                    String   @id @default(uuid())
+  stripeEventId         String   @unique @map("stripe_event_id")
+  type                  String
+  processedAt           DateTime @default(now()) @map("processed_at")
+  payload               Json
+  processedSuccessfully Boolean  @default(true) @map("processed_successfully")
+  errorMessage          String?  @map("error_message")
+  retries               Int      @default(0)
 
+  @@index([processedSuccessfully])
   @@map("stripe_events")
 }
 
