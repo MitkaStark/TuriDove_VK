@@ -49,7 +49,7 @@ async function bootstrap() {
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'https://api.stripe.com'],
-          frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+          frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://checkout.stripe.com'],
         },
       },
       crossOriginEmbedderPolicy: false,

@@ -42,6 +42,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Registrar nuevo usuario (rol CLIENTE por defecto)' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
   @ApiResponse({ status: 409, description: 'El email ya está registrado' })
@@ -52,6 +53,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @UseGuards(LocalAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Iniciar sesión con email y contraseña' })
   @ApiResponse({ status: 200, description: 'Login exitoso, retorna JWT y usuario' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
