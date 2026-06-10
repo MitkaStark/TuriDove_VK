@@ -112,6 +112,11 @@ export default function LoginPage() {
           {errors.password && (
             <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
           )}
+          <div className="mt-2 text-right">
+            <Link href="/password-reset" className="text-xs text-gold-600 hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </div>
 
         <button
