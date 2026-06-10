@@ -97,19 +97,21 @@ model User {
   role      Role     @default(CLIENTE)
   activo    Boolean  @default(true)
   avatar    String?
+  emailVerifiedAt    DateTime?            @map("email_verified_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hospedajes        Hospedaje[]
-  actividades       Actividad[]
-  transfers         Transfer[]
-  vehiculos         Vehiculo[]
-  reservas          Reserva[]
-  pagos             Pago[]
-  auditLogs         AuditLog[]
-  paquetes          PaqueteActividad[]
-  comisiones        Comision[]
-  paquetesProveedor Paquete[]          @relation("PaquetesDeProveedor")
+  hospedajes         Hospedaje[]
+  actividades        Actividad[]
+  transfers          Transfer[]
+  vehiculos          Vehiculo[]
+  reservas           Reserva[]
+  pagos              Pago[]
+  auditLogs          AuditLog[]
+  paquetes           PaqueteActividad[]
+  comisiones         Comision[]
+  paquetesProveedor  Paquete[]           @relation("PaquetesDeProveedor")
+  emailVerifications EmailVerification[]
 
   @@map("users")
 }
@@ -736,4 +738,18 @@ model EmailLog {
   @@index([template])
   @@index([status])
   @@map("email_logs")
+}
+
+model EmailVerification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verifications")
 }
