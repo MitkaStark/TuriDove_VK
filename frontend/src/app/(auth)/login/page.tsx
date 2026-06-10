@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 import { loginSchema, type LoginInput } from "@/lib/validators";
 import { useAuth } from "@/hooks/use-auth";
+import { authService } from "@/services/auth.service";
 import { Role } from "@/types";
 
 const roleDashboard: Record<string, string> = {
@@ -37,7 +39,28 @@ export default function LoginPage() {
         const role = response.user.role as string;
         router.push(roleDashboard[role] || "/");
       },
-      onError: () => {
+      onError: (e: any) => {
+        const status = e?.response?.status;
+        const code = e?.response?.data?.code ?? e?.response?.data?.message?.code;
+        const blockedEmail = e?.response?.data?.email ?? e?.response?.data?.message?.email;
+        if (status === 403 && code === 'EMAIL_NOT_VERIFIED') {
+          toast((t) => (
+            <div className="text-sm">
+              Debes verificar tu email antes de iniciar sesión.{' '}
+              <button
+                onClick={() => {
+                  authService.resendVerification(blockedEmail);
+                  toast.dismiss(t.id);
+                  toast.success('Te reenviamos el link');
+                }}
+                className="underline text-gold-600"
+              >
+                Reenviar link
+              </button>
+            </div>
+          ), { duration: 8000 });
+          return;
+        }
         setError("Credenciales inválidas. Verifica tu email y contraseña.");
       },
     });
