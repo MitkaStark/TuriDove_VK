@@ -12,6 +12,7 @@ import { RegisterDto } from './dto/register.dto';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { EmailVerificationService } from './services/email-verification.service';
+import { RefreshTokenService } from './services/refresh-token.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly auditoriaService: AuditoriaService,
     private readonly emailVerification: EmailVerificationService,
+    private readonly refreshTokens: RefreshTokenService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -42,7 +44,7 @@ export class AuthService {
       role,
     });
 
-    const token = this.generateToken(user);
+    const pair = await this.refreshTokens.issuePair(user.id, user.role);
 
     // Audit register
     this.auditoriaService.log({
@@ -59,7 +61,9 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      token,
+      token: pair.accessToken,
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
     };
   }
 
@@ -77,7 +81,7 @@ export class AuthService {
       });
     }
 
-    const token = this.generateToken(user);
+    const pair = await this.refreshTokens.issuePair(user.id, user.role);
 
     // Audit login
     this.auditoriaService.log({
@@ -91,7 +95,9 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      token,
+      token: pair.accessToken,
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
     };
   }
 
@@ -118,17 +124,11 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  async refreshToken(user: { id: string; email: string; role: string }) {
-    const freshUser = await this.usersService.findById(user.id);
-    if (!freshUser || !freshUser.activo) {
-      throw new UnauthorizedException('Usuario no encontrado o inactivo');
-    }
-
-    const token = this.generateToken(freshUser);
-    const { password: _, ...userWithoutPassword } = freshUser;
-    return {
-      user: userWithoutPassword,
-      token,
-    };
+  /**
+   * Issues a token pair (access + refresh) for an already-validated user.
+   * Used by the controller's login endpoint (which validates via LocalAuthGuard).
+   */
+  async issueTokensForUser(user: { id: string; role: string }) {
+    return this.refreshTokens.issuePair(user.id, user.role);
   }
 }

@@ -9,6 +9,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { UsersModule } from '../users/users.module';
 import { EmailVerificationService } from './services/email-verification.service';
 import { PasswordResetService } from './services/password-reset.service';
+import { RefreshTokenService } from './services/refresh-token.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { PasswordResetService } from './services/password-reset.service';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy, EmailVerificationService, PasswordResetService],
+  providers: [AuthService, JwtStrategy, LocalStrategy, EmailVerificationService, PasswordResetService, RefreshTokenService],
   exports: [AuthService],
 })
 export class AuthModule {}

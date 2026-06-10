@@ -22,8 +22,10 @@ import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { EmailVerificationService } from './services/email-verification.service';
 import { PasswordResetService } from './services/password-reset.service';
+import { RefreshTokenService } from './services/refresh-token.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import { Public } from '../../common/decorators/public.decorator';
@@ -35,6 +37,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly emailVerif: EmailVerificationService,
     private readonly passwordReset: PasswordResetService,
+    private readonly refreshTokens: RefreshTokenService,
   ) {}
 
   @Public()
@@ -60,11 +63,13 @@ export class AuthController {
         email: req.user.email,
       });
     }
-    const token = this.authService.generateToken(req.user);
+    const pair = await this.authService.issueTokensForUser(req.user);
     const { password: _, ...userWithoutPassword } = req.user;
     return {
       user: userWithoutPassword,
-      token,
+      token: pair.accessToken,
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
     };
   }
 
@@ -99,14 +104,24 @@ export class AuthController {
     return userWithoutPassword;
   }
 
+  @Public()
   @Post('refresh')
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Refrescar tokens vía rotación de refresh token' })
+  @ApiResponse({ status: 200, description: 'Nuevo par de tokens emitido' })
+  @ApiResponse({ status: 401, description: 'Refresh token inválido, expirado o revocado' })
+  async refresh(@Body() dto: RefreshDto) {
+    return this.refreshTokens.rotate(dto.refreshToken);
+  }
+
+  @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Refrescar token JWT' })
-  @ApiResponse({ status: 200, description: 'Token refrescado exitosamente' })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
-  async refreshToken(@Request() req: any) {
-    return this.authService.refreshToken(req.user);
+  @ApiOperation({ summary: 'Cerrar sesión revocando el refresh token' })
+  @ApiResponse({ status: 200, description: 'Refresh token revocado' })
+  async logout(@Body() dto: RefreshDto) {
+    await this.refreshTokens.revoke(dto.refreshToken);
+    return { ok: true };
   }
 
   @Public()
