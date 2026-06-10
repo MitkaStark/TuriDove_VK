@@ -48,8 +48,9 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     ThrottlerModule.forRootAsync({
       useFactory: () => ({
         throttlers: [
-          { name: 'short',  ttl: 1000,  limit: 10 },
-          { name: 'medium', ttl: 60_000, limit: 120 },
+          { name: 'default', ttl: 60_000, limit: 120 },
+          { name: 'short',   ttl: 1000,   limit: 10 },
+          { name: 'medium',  ttl: 60_000, limit: 120 },
         ],
         storage: new ThrottlerStorageRedisService(
           new Redis({
