@@ -1,6 +1,7 @@
 import {
   Injectable,
   ConflictException,
+  ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +11,7 @@ import { AuditoriaService } from '../auditoria/auditoria.service';
 import { RegisterDto } from './dto/register.dto';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { EmailVerificationService } from './services/email-verification.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +19,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly auditoriaService: AuditoriaService,
+    private readonly emailVerification: EmailVerificationService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -50,6 +53,9 @@ export class AuthService {
       userId: user.id,
     }).catch(() => {});
 
+    // Disparar email de verificación (no bloquea registro si falla)
+    this.emailVerification.sendVerification(user.id).catch(() => {});
+
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
@@ -61,6 +67,14 @@ export class AuthService {
     const user = await this.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    if (!user.emailVerifiedAt) {
+      throw new ForbiddenException({
+        message: 'Debes verificar tu email antes de iniciar sesión',
+        code: 'EMAIL_NOT_VERIFIED',
+        email: user.email,
+      });
     }
 
     const token = this.generateToken(user);
