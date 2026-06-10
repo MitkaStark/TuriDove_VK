@@ -22,6 +22,7 @@ import { PaquetesModule } from './modules/paquetes/paquetes.module';
 import { StripeModule } from './modules/stripe/stripe.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { QueueModule } from './modules/queue/queue.module';
+import { SistemaModule } from './modules/sistema/sistema.module';
 import { MailModule } from './modules/mail/mail.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -75,6 +76,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     PaquetesModule,
     StripeModule,
     MailModule,
+    SistemaModule,
   ],
   providers: [
     {
