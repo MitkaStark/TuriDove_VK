@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -24,8 +24,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3001);
 
-  // Global prefix
-  app.setGlobalPrefix('api/v1');
+  // Global prefix (excluye /health para que el endpoint quede en http://host:port/health)
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: 'health', method: RequestMethod.GET }],
+  });
 
   // CORS — accepts comma-separated list from CORS_ORIGIN env var
   const corsOrigin = configService.get<string>('CORS_ORIGIN');

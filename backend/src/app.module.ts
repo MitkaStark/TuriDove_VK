@@ -24,6 +24,7 @@ import { RedisModule } from './modules/redis/redis.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { SistemaModule } from './modules/sistema/sistema.module';
 import { MailModule } from './modules/mail/mail.module';
+import { HealthModule } from './modules/health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
@@ -77,6 +78,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     StripeModule,
     MailModule,
     SistemaModule,
+    HealthModule,
   ],
   providers: [
     {
