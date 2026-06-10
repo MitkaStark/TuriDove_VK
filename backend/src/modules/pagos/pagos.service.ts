@@ -79,6 +79,18 @@ export class PagosService {
     if (reserva.estado !== 'PENDIENTE') {
       throw new BadRequestException('La reserva no esta pendiente de pago');
     }
+    if (reserva.expiresAt && reserva.expiresAt < new Date()) {
+      throw new BadRequestException('La reserva expiró. Crea una nueva.');
+    }
+
+    let idempotencyKey = reserva.idempotencyKey;
+    if (!idempotencyKey) {
+      idempotencyKey = `reserva-${reservaId}-${Date.now()}`;
+      await this.prisma.reserva.update({
+        where: { id: reservaId },
+        data: { idempotencyKey },
+      });
+    }
 
     const session = await this.stripe.createCheckoutSession({
       reservaId,
@@ -90,6 +102,7 @@ export class PagosService {
       cancelUrl:
         process.env.STRIPE_CANCEL_URL ??
         'http://localhost:3003/reservas/{RESERVA_ID}/pago/cancelado',
+      idempotencyKey,
     });
 
     await this.prisma.pago.create({
