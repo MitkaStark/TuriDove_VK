@@ -36,13 +36,9 @@ export default function RegisterPage() {
     registerMutation.mutate(
       { ...payload, role: role as Role },
       {
-        onSuccess: (response) => {
-          const userRole = response.user.role as string;
-          const routes: Record<string, string> = {
-            [Role.PROVEEDOR]: "/proveedor",
-            [Role.CLIENTE]: "/cliente",
-          };
-          router.push(routes[userRole] || "/");
+        onSuccess: () => {
+          // No auto-login: el backend exige verificar el email antes de loguear.
+          router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`);
         },
         onError: (err: any) => {
           setError(

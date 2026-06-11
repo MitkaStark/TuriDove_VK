@@ -44,8 +44,6 @@ export class AuthService {
       role,
     });
 
-    const pair = await this.refreshTokens.issuePair(user.id, user.role);
-
     // Audit register
     this.auditoriaService.log({
       accion: 'REGISTER',
@@ -58,12 +56,12 @@ export class AuthService {
     // Disparar email de verificación (no bloquea registro si falla)
     this.emailVerification.sendVerification(user.id).catch(() => {});
 
+    // NO emitir tokens — el usuario debe verificar email antes de iniciar sesión.
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      token: pair.accessToken,
-      accessToken: pair.accessToken,
-      refreshToken: pair.refreshToken,
+      requiresEmailVerification: true,
+      message: 'Cuenta creada. Revisa tu email para confirmar tu cuenta.',
     };
   }
 
