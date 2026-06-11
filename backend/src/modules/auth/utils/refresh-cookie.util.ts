@@ -5,9 +5,15 @@ const REFRESH_COOKIE_PATH = '/api/v1/auth';
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function cookieOptions(): CookieOptions {
+  // En contenedor NODE_ENV=production siempre (para que NestJS optimice),
+  // por eso usamos COOKIE_SECURE como override explicito. Default: secure on
+  // en prod salvo que se setee COOKIE_SECURE=false (necesario para HTTP local).
+  const secure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === 'true'
+    : process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
     path: REFRESH_COOKIE_PATH,
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,

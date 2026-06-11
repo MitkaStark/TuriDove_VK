@@ -66,6 +66,7 @@ services:
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-http://localhost:3003/reservas/{RESERVA_ID}/pago/cancelado}
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT_INTERNAL:-6379}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
     ports:
       - "3002:3001"
     volumes:
