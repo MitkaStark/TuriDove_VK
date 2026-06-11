@@ -41,9 +41,15 @@ export default function LoginPage() {
       },
       onError: (e: any) => {
         const status = e?.response?.status;
-        const code = e?.response?.data?.code ?? e?.response?.data?.message?.code;
-        const blockedEmail = e?.response?.data?.email ?? e?.response?.data?.message?.email;
-        if (status === 403 && code === 'EMAIL_NOT_VERIFIED') {
+        const data = e?.response?.data;
+        const code = data?.code ?? data?.message?.code;
+        const blockedEmail = data?.email ?? data?.message?.email ?? form.email;
+        // El HttpExceptionFilter del backend a veces aplana el body y se pierde el `code`.
+        // Detectamos también por el mensaje para no depender exclusivamente del código.
+        const looksLikeUnverified =
+          (status === 403) &&
+          (code === 'EMAIL_NOT_VERIFIED' || /verificar\s+tu\s+email/i.test(data?.message ?? ''));
+        if (looksLikeUnverified) {
           toast((t) => (
             <div className="text-sm">
               Debes verificar tu email antes de iniciar sesión.{' '}
