@@ -225,6 +225,11 @@ export class StripeService implements OnModuleInit {
           },
         ],
         metadata: { reservaId: params.reservaId },
+        // Propagamos la metadata al PaymentIntent para que webhooks como
+        // payment_intent.payment_failed puedan resolver la reserva.
+        payment_intent_data: {
+          metadata: { reservaId: params.reservaId },
+        },
         success_url: params.successUrl.replace('{RESERVA_ID}', params.reservaId),
         cancel_url: params.cancelUrl.replace('{RESERVA_ID}', params.reservaId),
       },

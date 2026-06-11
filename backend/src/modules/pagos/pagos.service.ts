@@ -172,14 +172,18 @@ export class PagosService {
         }
         case 'payment_intent.payment_failed': {
           const intent = event.data.object as any;
+          // El payment_intent puede no tener stripePaymentId todavía si el pago falló
+          // antes de checkout.session.completed. Resolvemos la reserva por metadata.
+          const reservaId = intent.metadata?.reservaId;
+          if (!reservaId) break;
           await this.prisma.pago.updateMany({
-            where: { stripePaymentId: intent.id },
-            data: { estado: 'FALLIDO' },
+            where: { reservaId, estado: { in: ['PENDIENTE', 'PROCESANDO'] } },
+            data: {
+              estado: 'FALLIDO',
+              stripePaymentId: intent.id,
+            },
           });
-          const pago = await this.prisma.pago.findFirst({
-            where: { stripePaymentId: intent.id },
-          });
-          if (pago) await this.sendPagoFallidoEmail(pago.reservaId);
+          await this.sendPagoFallidoEmail(reservaId);
           break;
         }
         case 'charge.refunded': {
