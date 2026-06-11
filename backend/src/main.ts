@@ -1,8 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { Logger as PinoLogger } from 'nestjs-pino';
+import helmet from 'helmet';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -14,14 +16,18 @@ async function bootstrap() {
     rawBody: true,
   });
 
+  app.useLogger(app.get(PinoLogger));
+
   // Serve uploaded files as static
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3001);
 
-  // Global prefix
-  app.setGlobalPrefix('api/v1');
+  // Global prefix (excluye /health para que el endpoint quede en http://host:port/health)
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: 'health', method: RequestMethod.GET }],
+  });
 
   // CORS — accepts comma-separated list from CORS_ORIGIN env var
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
@@ -35,6 +41,22 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com'],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https://api.stripe.com'],
+          frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://checkout.stripe.com'],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Global pipes
   app.useGlobalPipes(

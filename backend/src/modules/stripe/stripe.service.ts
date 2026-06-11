@@ -200,6 +200,7 @@ export class StripeService implements OnModuleInit {
     description?: string;
     successUrl: string;
     cancelUrl: string;
+    idempotencyKey?: string;
   }): Promise<{ url: string; sessionId: string }> {
     // Validar que las claves están configuradas antes de llamar a Stripe
     const cfg = this.cachedConfig;
@@ -209,23 +210,31 @@ export class StripeService implements OnModuleInit {
       );
     }
 
-    const session = await this.stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: process.env.STRIPE_CURRENCY ?? 'usd',
-            product_data: { name: params.description ?? `Reserva ${params.reservaId}` },
-            unit_amount: this.toCents(params.amount),
+    const session = await this.stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: process.env.STRIPE_CURRENCY ?? 'usd',
+              product_data: { name: params.description ?? `Reserva ${params.reservaId}` },
+              unit_amount: this.toCents(params.amount),
+            },
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        metadata: { reservaId: params.reservaId },
+        // Propagamos la metadata al PaymentIntent para que webhooks como
+        // payment_intent.payment_failed puedan resolver la reserva.
+        payment_intent_data: {
+          metadata: { reservaId: params.reservaId },
         },
-      ],
-      metadata: { reservaId: params.reservaId },
-      success_url: params.successUrl.replace('{RESERVA_ID}', params.reservaId),
-      cancel_url: params.cancelUrl.replace('{RESERVA_ID}', params.reservaId),
-    });
+        success_url: params.successUrl.replace('{RESERVA_ID}', params.reservaId),
+        cancel_url: params.cancelUrl.replace('{RESERVA_ID}', params.reservaId),
+      },
+      params.idempotencyKey ? { idempotencyKey: params.idempotencyKey } : undefined,
+    );
     if (!session.url) throw new Error('Stripe devolvio session sin URL');
     return { url: session.url, sessionId: session.id };
   }

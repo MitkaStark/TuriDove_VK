@@ -21,4 +21,23 @@ export const authService = {
     const { data } = await api.post<AuthResponse>('/auth/refresh');
     return data;
   },
+
+  async refreshSession(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const { data } = await api.post('/auth/refresh', { refreshToken });
+    return data;
+  },
+
+  async logout(refreshToken: string): Promise<void> {
+    await api.post('/auth/logout', { refreshToken });
+  },
+
+  async verifyEmail(token: string): Promise<{ userId: string }> {
+    const { data } = await api.post('/auth/verify-email', { token });
+    return data;
+  },
+
+  async resendVerification(email: string): Promise<{ ok: boolean }> {
+    const { data } = await api.post('/auth/resend-verification', { email });
+    return data;
+  },
 };

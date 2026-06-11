@@ -97,19 +97,23 @@ model User {
   role      Role     @default(CLIENTE)
   activo    Boolean  @default(true)
   avatar    String?
+  emailVerifiedAt    DateTime?            @map("email_verified_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hospedajes        Hospedaje[]
-  actividades       Actividad[]
-  transfers         Transfer[]
-  vehiculos         Vehiculo[]
-  reservas          Reserva[]
-  pagos             Pago[]
-  auditLogs         AuditLog[]
-  paquetes          PaqueteActividad[]
-  comisiones        Comision[]
-  paquetesProveedor Paquete[]          @relation("PaquetesDeProveedor")
+  hospedajes         Hospedaje[]
+  actividades        Actividad[]
+  transfers          Transfer[]
+  vehiculos          Vehiculo[]
+  reservas           Reserva[]
+  pagos              Pago[]
+  auditLogs          AuditLog[]
+  paquetes           PaqueteActividad[]
+  comisiones         Comision[]
+  paquetesProveedor  Paquete[]           @relation("PaquetesDeProveedor")
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+  refreshTokens      RefreshToken[]
 
   @@map("users")
 }
@@ -481,6 +485,9 @@ model Reserva {
   pagos              Pago[]
   comisiones         Comision[]
 
+  expiresAt      DateTime? @map("expires_at")
+  idempotencyKey String?   @unique @map("idempotency_key")
+
   @@index([clienteId])
   @@index([estado])
   @@index([codigo])
@@ -676,12 +683,16 @@ model AuditLog {
 }
 
 model StripeEvent {
-  id            String   @id @default(uuid())
-  stripeEventId String   @unique @map("stripe_event_id")
-  type          String
-  processedAt   DateTime @default(now()) @map("processed_at")
-  payload       Json
+  id                    String   @id @default(uuid())
+  stripeEventId         String   @unique @map("stripe_event_id")
+  type                  String
+  processedAt           DateTime @default(now()) @map("processed_at")
+  payload               Json
+  processedSuccessfully Boolean  @default(true) @map("processed_successfully")
+  errorMessage          String?  @map("error_message")
+  retries               Int      @default(0)
 
+  @@index([processedSuccessfully])
   @@map("stripe_events")
 }
 
@@ -697,4 +708,80 @@ model ConfiguracionStripe {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("configuracion_stripe")
+}
+
+model ConfiguracionEmail {
+  id              String   @id @default("singleton")
+  provider        String?
+  resendApiKeyEnc String?  @map("resend_api_key_enc")
+  smtpHost        String?  @map("smtp_host")
+  smtpPort        Int?     @map("smtp_port")
+  smtpUserEnc     String?  @map("smtp_user_enc")
+  smtpPassEnc     String?  @map("smtp_pass_enc")
+  fromEmail       String?  @map("from_email")
+  fromName        String?  @map("from_name")
+  updatedBy       String?  @map("updated_by")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_email")
+}
+
+model EmailLog {
+  id         String   @id @default(uuid())
+  toEmail    String   @map("to_email")
+  subject    String
+  template   String
+  status     String
+  errorMsg   String?  @map("error_msg")
+  providerId String?  @map("provider_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([toEmail])
+  @@index([template])
+  @@index([status])
+  @@map("email_logs")
+}
+
+model EmailVerification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  family    String
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([family])
+  @@index([userId])
+  @@map("refresh_tokens")
 }

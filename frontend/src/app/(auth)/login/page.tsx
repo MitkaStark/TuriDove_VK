@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 import { loginSchema, type LoginInput } from "@/lib/validators";
 import { useAuth } from "@/hooks/use-auth";
+import { authService } from "@/services/auth.service";
 import { Role } from "@/types";
 
 const roleDashboard: Record<string, string> = {
@@ -37,7 +39,34 @@ export default function LoginPage() {
         const role = response.user.role as string;
         router.push(roleDashboard[role] || "/");
       },
-      onError: () => {
+      onError: (e: any) => {
+        const status = e?.response?.status;
+        const data = e?.response?.data;
+        const code = data?.code ?? data?.message?.code;
+        const blockedEmail = data?.email ?? data?.message?.email ?? form.email;
+        // El HttpExceptionFilter del backend a veces aplana el body y se pierde el `code`.
+        // Detectamos también por el mensaje para no depender exclusivamente del código.
+        const looksLikeUnverified =
+          (status === 403) &&
+          (code === 'EMAIL_NOT_VERIFIED' || /verificar\s+tu\s+email/i.test(data?.message ?? ''));
+        if (looksLikeUnverified) {
+          toast((t) => (
+            <div className="text-sm">
+              Debes verificar tu email antes de iniciar sesión.{' '}
+              <button
+                onClick={() => {
+                  authService.resendVerification(blockedEmail);
+                  toast.dismiss(t.id);
+                  toast.success('Te reenviamos el link');
+                }}
+                className="underline text-gold-600"
+              >
+                Reenviar link
+              </button>
+            </div>
+          ), { duration: 8000 });
+          return;
+        }
         setError("Credenciales inválidas. Verifica tu email y contraseña.");
       },
     });
@@ -89,6 +118,11 @@ export default function LoginPage() {
           {errors.password && (
             <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
           )}
+          <div className="mt-2 text-right">
+            <Link href="/password-reset" className="text-xs text-gold-600 hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </div>
 
         <button

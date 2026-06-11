@@ -31,10 +31,8 @@ export function useAuth() {
 
   const registerMutation = useMutation({
     mutationFn: (payload: RegisterPayload) => authService.register(payload),
-    onSuccess: (data) => {
-      login(data.user, data.token);
-      queryClient.invalidateQueries({ queryKey: ['auth', 'profile'] });
-    },
+    // No auto-login. El usuario debe verificar su email antes de poder iniciar sesion.
+    // La pagina de registro redirige a /verify-email tras un onSuccess exitoso.
   });
 
   const handleLogout = () => {

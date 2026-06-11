@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/shared/dashboard-layout";
 import { Role } from "@/types";
 import {
   LayoutDashboard, Users, Home, Activity, Bus, Car,
-  Calendar, CreditCard, BarChart3, Shield, Package,
+  Calendar, CreditCard, BarChart3, Shield, Package, ServerCog,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -20,6 +20,7 @@ const sidebarItems = [
   { title: "Pagos", href: "/admin/pagos", icon: CreditCard },
   { title: "Finanzas", href: "/admin/financiero", icon: BarChart3 },
   { title: "Auditoria", href: "/admin/auditoria", icon: Shield },
+  { title: "Sistema", href: "/admin/sistema", icon: ServerCog },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

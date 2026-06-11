@@ -1,6 +1,7 @@
 import {
   Injectable,
   ConflictException,
+  ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +11,8 @@ import { AuditoriaService } from '../auditoria/auditoria.service';
 import { RegisterDto } from './dto/register.dto';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { EmailVerificationService } from './services/email-verification.service';
+import { RefreshTokenService } from './services/refresh-token.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly auditoriaService: AuditoriaService,
+    private readonly emailVerification: EmailVerificationService,
+    private readonly refreshTokens: RefreshTokenService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -39,8 +44,6 @@ export class AuthService {
       role,
     });
 
-    const token = this.generateToken(user);
-
     // Audit register
     this.auditoriaService.log({
       accion: 'REGISTER',
@@ -50,10 +53,15 @@ export class AuthService {
       userId: user.id,
     }).catch(() => {});
 
+    // Disparar email de verificación (no bloquea registro si falla)
+    this.emailVerification.sendVerification(user.id).catch(() => {});
+
+    // NO emitir tokens — el usuario debe verificar email antes de iniciar sesión.
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      token,
+      requiresEmailVerification: true,
+      message: 'Cuenta creada. Revisa tu email para confirmar tu cuenta.',
     };
   }
 
@@ -63,7 +71,15 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const token = this.generateToken(user);
+    if (!user.emailVerifiedAt) {
+      throw new ForbiddenException({
+        message: 'Debes verificar tu email antes de iniciar sesión',
+        code: 'EMAIL_NOT_VERIFIED',
+        email: user.email,
+      });
+    }
+
+    const pair = await this.refreshTokens.issuePair(user.id, user.role);
 
     // Audit login
     this.auditoriaService.log({
@@ -77,7 +93,9 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      token,
+      token: pair.accessToken,
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
     };
   }
 
@@ -104,17 +122,11 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  async refreshToken(user: { id: string; email: string; role: string }) {
-    const freshUser = await this.usersService.findById(user.id);
-    if (!freshUser || !freshUser.activo) {
-      throw new UnauthorizedException('Usuario no encontrado o inactivo');
-    }
-
-    const token = this.generateToken(freshUser);
-    const { password: _, ...userWithoutPassword } = freshUser;
-    return {
-      user: userWithoutPassword,
-      token,
-    };
+  /**
+   * Issues a token pair (access + refresh) for an already-validated user.
+   * Used by the controller's login endpoint (which validates via LocalAuthGuard).
+   */
+  async issueTokensForUser(user: { id: string; role: string }) {
+    return this.refreshTokens.issuePair(user.id, user.role);
   }
 }

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { Redis } from 'ioredis';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -16,6 +20,11 @@ import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PaquetesModule } from './modules/paquetes/paquetes.module';
 import { StripeModule } from './modules/stripe/stripe.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { SistemaModule } from './modules/sistema/sistema.module';
+import { MailModule } from './modules/mail/mail.module';
+import { HealthModule } from './modules/health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
@@ -26,6 +35,34 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
       load: [configuration],
       envFilePath: ['.env', '.env.example'],
     }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { singleLine: true } }
+          : undefined,
+        redact: ['req.headers.authorization', 'req.headers.cookie', '*.password', '*.token', '*.secretKey'],
+        customProps: () => ({ service: 'turidove-backend' }),
+        autoLogging: true,
+      },
+    }),
+    ThrottlerModule.forRootAsync({
+      useFactory: () => ({
+        throttlers: [
+          { name: 'default', ttl: 60_000, limit: 120 },
+          { name: 'short',   ttl: 1000,   limit: 10 },
+          { name: 'medium',  ttl: 60_000, limit: 120 },
+        ],
+        storage: new ThrottlerStorageRedisService(
+          new Redis({
+            host: process.env.REDIS_HOST ?? 'localhost',
+            port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+            maxRetriesPerRequest: null,
+          }),
+        ),
+      }),
+    }),
+    RedisModule,
+    QueueModule,
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -40,8 +77,15 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     UploadsModule,
     PaquetesModule,
     StripeModule,
+    MailModule,
+    SistemaModule,
+    HealthModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
