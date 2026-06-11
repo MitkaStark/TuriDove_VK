@@ -4,8 +4,11 @@ import {
   Get,
   Body,
   ForbiddenException,
+  UnauthorizedException,
   UseGuards,
   Request,
+  Req,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,6 +17,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import type { Response, Request as ExpressRequest } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,13 +26,17 @@ import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { EmailVerificationService } from './services/email-verification.service';
 import { PasswordResetService } from './services/password-reset.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import { Public } from '../../common/decorators/public.decorator';
+import {
+  setRefreshCookie,
+  clearRefreshCookie,
+  readRefreshCookie,
+} from './utils/refresh-cookie.util';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -57,7 +65,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Iniciar sesión con email y contraseña' })
   @ApiResponse({ status: 200, description: 'Login exitoso, retorna JWT y usuario' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
-  async login(@Body() loginDto: LoginDto, @Request() req: any) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     if (!req.user.emailVerifiedAt) {
       throw new ForbiddenException({
         message: 'Debes verificar tu email antes de iniciar sesión',
@@ -66,12 +78,12 @@ export class AuthController {
       });
     }
     const pair = await this.authService.issueTokensForUser(req.user);
+    setRefreshCookie(res, pair.refreshToken);
     const { password: _, ...userWithoutPassword } = req.user;
     return {
       user: userWithoutPassword,
       token: pair.accessToken,
       accessToken: pair.accessToken,
-      refreshToken: pair.refreshToken,
     };
   }
 
@@ -112,8 +124,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Refrescar tokens vía rotación de refresh token' })
   @ApiResponse({ status: 200, description: 'Nuevo par de tokens emitido' })
   @ApiResponse({ status: 401, description: 'Refresh token inválido, expirado o revocado' })
-  async refresh(@Body() dto: RefreshDto) {
-    return this.refreshTokens.rotate(dto.refreshToken);
+  async refresh(
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = readRefreshCookie(req);
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token no presente');
+    }
+    const pair = await this.refreshTokens.rotate(refreshToken);
+    setRefreshCookie(res, pair.refreshToken);
+    return { accessToken: pair.accessToken };
   }
 
   @Post('logout')
@@ -121,8 +142,15 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cerrar sesión revocando el refresh token' })
   @ApiResponse({ status: 200, description: 'Refresh token revocado' })
-  async logout(@Body() dto: RefreshDto) {
-    await this.refreshTokens.revoke(dto.refreshToken);
+  async logout(
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = readRefreshCookie(req);
+    if (refreshToken) {
+      await this.refreshTokens.revoke(refreshToken);
+    }
+    clearRefreshCookie(res);
     return { ok: true };
   }
 
